@@ -455,7 +455,7 @@ CLOVE_TEST(RND_VX_BYTE_AND_TEST)
     CLOVE_UINT_EQ(0x0, registers[0x0]);
 }
 
-CLOVE_TEST(DRW_VX_VY_BYTE_NO_COLLISION) // needs fixing
+CLOVE_TEST(DRW_VX_VY_NIBBLE_NO_COLLISION) // needs fixing
 {
     emulator->SetI(0x00);   // "0" location
     auto& registers = emulator->GetRegisters();
@@ -464,11 +464,11 @@ CLOVE_TEST(DRW_VX_VY_BYTE_NO_COLLISION) // needs fixing
 
     uint8_t expected_sprite[] = 
     {
-        255,255,255,255,    255,255,255,255,    255,255,255,255,    255,255,255,255,
-        255,255,255,255,    0,0,0,0,            0,0,0,0,            255,255,255,255,
-        255,255,255,255,    0,0,0,0,            0,0,0,0,            255,255,255,255,
-        255,255,255,255,    0,0,0,0,            0,0,0,0,            255,255,255,255,
-        255,255,255,255,    255,255,255,255,    255,255,255,255,    255,255,255,255,
+        0xFF,0xFF,0xFF,0xFF,    0xFF,0xFF,0xFF,0xFF,    0xFF,0xFF,0xFF,0xFF,    0xFF,0xFF,0xFF,0xFF,
+        0xFF,0xFF,0xFF,0xFF,    0x00,0x00,0x00,0x00,    0x00,0x00,0x00,0x00,    0xFF,0xFF,0xFF,0xFF,
+        0xFF,0xFF,0xFF,0xFF,    0x00,0x00,0x00,0x00,    0x00,0x00,0x00,0x00,    0xFF,0xFF,0xFF,0xFF,
+        0xFF,0xFF,0xFF,0xFF,    0x00,0x00,0x00,0x00,    0x00,0x00,0x00,0x00,    0xFF,0xFF,0xFF,0xFF,
+        0xFF,0xFF,0xFF,0xFF,    0xFF,0xFF,0xFF,0xFF,    0xFF,0xFF,0xFF,0xFF,    0xFF,0xFF,0xFF,0xFF,
     };
 
     emulator->OpcodeD(0xD115);
@@ -477,24 +477,26 @@ CLOVE_TEST(DRW_VX_VY_BYTE_NO_COLLISION) // needs fixing
 
     int pitch;
     uint8_t* pixels;
-    SDL_Rect rect;
-    rect.h = 5;
-    rect.w = 4;
-    rect.x = 0;
-    rect.y = 0;
 
-    if(SDL_LockTexture(texture, &rect, reinterpret_cast<void**>(&pixels), &pitch) != 0)
+    if(SDL_LockTexture(texture, nullptr, reinterpret_cast<void**>(&pixels), &pitch) != 0)
     {
         CLOVE_FAIL();
     }
 
-    int comp_res = memcmp(pixels, expected_sprite, 80);
+    int comp_res_row_0 = memcmp(&pixels[0], &expected_sprite[0], 16);
+    int comp_res_row_1 = memcmp(&pixels[pitch], &expected_sprite[16], 16);
+    int comp_res_row_2 = memcmp(&pixels[pitch*2], &expected_sprite[32], 16);
+    int comp_res_row_3 = memcmp(&pixels[pitch*3], &expected_sprite[48], 16);
+    int comp_res_row_4 = memcmp(&pixels[pitch*4], &expected_sprite[64], 16);
 
     SDL_UnlockTexture(texture);
 
     CLOVE_UINT_EQ(0, registers[0xF]);
-    CLOVE_INT_EQ(0, comp_res);
-
+    CLOVE_INT_EQ(0, comp_res_row_0);
+    CLOVE_INT_EQ(0, comp_res_row_1);
+    CLOVE_INT_EQ(0, comp_res_row_2);
+    CLOVE_INT_EQ(0, comp_res_row_3);
+    CLOVE_INT_EQ(0, comp_res_row_4);
 }
 
 CLOVE_TEST(SKP_VX_PRESSED)
