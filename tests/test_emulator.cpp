@@ -4,6 +4,17 @@
 
 #define CLOVE_SUITE_NAME TestEmulator
 
+// class used to mock the keyboard state from SDL and be able to pass custom keyboard states
+class MockInput : public chipotto::IInput
+{
+public:
+	virtual const uint8_t *GetKeyboardState() override{return fake_keyboard_state;}
+    ~MockInput(){if(fake_keyboard_state) delete fake_keyboard_state;}
+
+	uint8_t *fake_keyboard_state = nullptr;
+};
+
+
 chipotto::Emulator* emulator = nullptr;
 
 CLOVE_SUITE_SETUP_ONCE()
@@ -59,6 +70,20 @@ CLOVE_TEST(CLS)
 
 CLOVE_TEST(RET)
 {
+    auto& stack = emulator->GetStack();
+    uint8_t stack_ptr = 0x05;
+    emulator->SetSP(stack_ptr);
+
+    stack[stack_ptr] = 0xFF;
+
+    emulator->Opcode0(0x0EE);
+
+    uint16_t PC = emulator->GetPC();
+    uint8_t new_SP = emulator->GetSP();
+
+    CLOVE_UINT_EQ(0xFF, PC);
+    CLOVE_UINT_EQ(stack_ptr - 1, new_SP);
+
 }
 
 CLOVE_TEST(JMP)
@@ -287,7 +312,7 @@ CLOVE_TEST(SUB_VX_VY_BORROW)
 
     emulator->Opcode8(0x8A25);
 
-    CLOVE_UINT_EQ((0x05 - 0x0F)%0x100, registers[0xA]);
+    CLOVE_UINT_EQ(0xF6, registers[0xA]);
     CLOVE_UINT_EQ(0, registers[0xF]);
 }
 
@@ -327,21 +352,21 @@ CLOVE_TEST(SUBN_VX_VY_BORROW)
 
     emulator->Opcode8(0x82A7);
 
-    CLOVE_UINT_EQ((0x05 - 0x0F)%0x100, registers[0xA]);
+    CLOVE_UINT_EQ(0xF6, registers[0x2]);
     CLOVE_UINT_EQ(0, registers[0xF]);
 }
 
 CLOVE_TEST(SUBN_VX_VY_NO_BORROW)
 {
     auto& registers = emulator->GetRegisters();
-    registers[0x2] = 0x05;
-    registers[0xA] = 0x0F;
+    registers[0x2] = 0x0F;
+    registers[0xA] = 0x05;
 
     registers[0xF] = 0;
 
     emulator->Opcode8(0x8A27);
 
-    CLOVE_UINT_EQ(0x0F - 0x05, registers[0x2]);
+    CLOVE_UINT_EQ(0x0F - 0x05, registers[0xA]);
     CLOVE_UINT_EQ(1, registers[0xF]);
 }
 
@@ -430,19 +455,127 @@ CLOVE_TEST(RND_VX_BYTE_AND_TEST)
     CLOVE_UINT_EQ(0x0, registers[0x0]);
 }
 
-CLOVE_TEST(DRW_VX_VY_BYTE)
+CLOVE_TEST(DRW_VX_VY_BYTE_NO_COLLISION) // needs fixing
 {
-    
+    emulator->SetI(0x00);   // "0" location
+    auto& registers = emulator->GetRegisters();
+
+    registers[0x1] = 0x0;
+
+    uint8_t expected_sprite[] = 
+    {
+        255,255,255,255,    255,255,255,255,    255,255,255,255,    255,255,255,255,
+        255,255,255,255,    0,0,0,0,            0,0,0,0,            255,255,255,255,
+        255,255,255,255,    0,0,0,0,            0,0,0,0,            255,255,255,255,
+        255,255,255,255,    0,0,0,0,            0,0,0,0,            255,255,255,255,
+        255,255,255,255,    255,255,255,255,    255,255,255,255,    255,255,255,255,
+    };
+
+    emulator->OpcodeD(0xD115);
+
+    auto texture = emulator->GetTexture();
+
+    int pitch;
+    uint8_t* pixels;
+    SDL_Rect rect;
+    rect.h = 5;
+    rect.w = 4;
+    rect.x = 0;
+    rect.y = 0;
+
+    if(SDL_LockTexture(texture, &rect, reinterpret_cast<void**>(&pixels), &pitch) != 0)
+    {
+        CLOVE_FAIL();
+    }
+
+    int comp_res = memcmp(pixels, expected_sprite, 80);
+
+    SDL_UnlockTexture(texture);
+
+    CLOVE_UINT_EQ(0, registers[0xF]);
+    CLOVE_INT_EQ(0, comp_res);
+
 }
 
-CLOVE_TEST(SKP_VX)
+CLOVE_TEST(SKP_VX_PRESSED)
 {
+    auto& registers = emulator->GetRegisters();
+    registers[0x1] = 0xC;
 
+    uint16_t old_pc = emulator->GetPC();
+
+    auto input_class = emulator->GetInputClass();
+    int num_keys;
+    SDL_GetKeyboardState(&num_keys);
+    MockInput* mock_input = new MockInput();
+    mock_input->fake_keyboard_state = new uint8_t[num_keys];
+    emulator->SetInputClass(mock_input);
+
+    mock_input->fake_keyboard_state[SDLK_4] = 1;
+
+    emulator->OpcodeE(0xE19E);
+
+    uint16_t new_pc = emulator->GetPC();
+
+    CLOVE_UINT_EQ(old_pc + 2, new_pc);
+
+    emulator->SetInputClass(input_class);
+    delete mock_input;
 }
 
-CLOVE_TEST(SKNP_VX)
+CLOVE_TEST(SKP_VX_NOT_PRESSED)
 {
+    auto& registers = emulator->GetRegisters();
+    registers[0x1] = 0xC;
 
+    uint16_t old_pc = emulator->GetPC();
+
+    emulator->OpcodeE(0xE19E);
+
+    uint16_t new_pc = emulator->GetPC();
+
+    CLOVE_UINT_EQ(old_pc, new_pc);
+}
+
+CLOVE_TEST(SKNP_VX_PRESSED)
+{
+    auto& registers = emulator->GetRegisters();
+    registers[0x1] = 0xC;
+
+    uint16_t old_pc = emulator->GetPC();
+
+    emulator->OpcodeE(0xE19E);
+
+    uint16_t new_pc = emulator->GetPC();
+
+    CLOVE_UINT_EQ(old_pc, new_pc);
+}
+
+CLOVE_TEST(SKNP_VX_NOT_PRESSED)
+{
+    auto& registers = emulator->GetRegisters();
+    uint8_t expected_key = 0xC;
+    registers[0x1] = expected_key;
+
+    uint16_t old_pc = emulator->GetPC();
+
+    auto input_class = emulator->GetInputClass();
+    int num_keys;
+    SDL_GetKeyboardState(&num_keys);
+    MockInput* mock_input = new MockInput();
+    mock_input->fake_keyboard_state = new uint8_t[num_keys];
+    emulator->SetInputClass(mock_input);
+
+    mock_input->fake_keyboard_state[SDLK_4] = 1;
+
+    emulator->OpcodeE(0xE19E);
+
+    uint16_t new_pc = emulator->GetPC();
+
+    CLOVE_UINT_EQ(old_pc + 2, new_pc);
+
+    emulator->SetInputClass(input_class);
+    delete mock_input;
 }
 
 CLOVE_TEST(LD_VX_DT)
@@ -458,6 +591,17 @@ CLOVE_TEST(LD_VX_DT)
 
 CLOVE_TEST(LD_VX_K)
 {
+    auto& registers = emulator->GetRegisters();
+
+    emulator->OpcodeF(0xF40A);
+
+    SDL_Event event{};
+    event.type = SDL_KEYDOWN;
+    event.key.keysym.sym = SDLK_4;
+    SDL_PushEvent(&event);
+    emulator->Tick();
+
+    CLOVE_INT_EQ(0xC, registers[0x4]);
 }
 
 CLOVE_TEST(LD_DT_VX)

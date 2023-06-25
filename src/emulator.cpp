@@ -71,6 +71,8 @@ namespace chipotto
 			SDL_DestroyWindow(Window);
 			return;
 		}
+
+        input_class = new EmulatorInput();
 	}
 
     Emulator::~Emulator()
@@ -86,6 +88,10 @@ namespace chipotto
         if(Window)
         {
             SDL_DestroyWindow(Window);
+        }
+        if(input_class)
+        {
+            delete input_class;
         }
     }
 
@@ -109,6 +115,12 @@ namespace chipotto
         {
             DelayTimer--;
             DeltaTimerTicks = 17 + SDL_GetTicks64();
+        }
+
+        if (SoundTimer > 0 && tick >= SoundTimerTicks)
+        {
+            DelayTimer--;
+            SoundTimerTicks = 17 + SDL_GetTicks64();
         }
 
         SDL_Event event;
@@ -135,11 +147,14 @@ namespace chipotto
             return true;
 
         uint16_t opcode = MemoryMapping[PC + 1] + (static_cast<uint16_t>(MemoryMapping[PC]) << 8);
+#ifndef EMU_TEST
         std::cout << std::hex << "0x" << PC << ": 0x" << opcode << "  -->  ";
+#endif
 
         OpcodeStatus status = Opcodes[opcode >> 12](opcode);
-
+#ifndef EMU_TEST
         std::cout << std::endl;
+#endif
         if (status == OpcodeStatus::IncrementPC)
         {
             PC += 2;
@@ -339,7 +354,14 @@ namespace chipotto
 
     OpcodeStatus Emulator::Opcode5(const uint16_t opcode)
     {
-        return OpcodeStatus::NotImplemented;
+        uint8_t register_vx_index = (opcode >> 8) & 0xF;
+        uint8_t register_vy_index = (opcode >> 4) & 0xF;
+#ifndef EMU_TEST
+        std::cout << "SE V" << (int)register_vx_index << ", V" << (int)register_vy_index;
+#endif
+        if (Registers[register_vx_index] == Registers[register_vy_index])
+            PC += 2;
+        return OpcodeStatus::IncrementPC;
     }
 
     OpcodeStatus Emulator::Opcode6(const uint16_t opcode)
@@ -411,6 +433,45 @@ namespace chipotto
 #endif
             return OpcodeStatus::IncrementPC;
         }
+        else if ((opcode & 0xF) == 0x5)
+        {
+            uint8_t registerX_index = (opcode >> 8) & 0xF;
+            uint8_t registerY_index = (opcode >> 4) & 0xF;
+            if (Registers[registerX_index] > Registers[registerY_index])
+                Registers[0xF] = 1;
+            else
+                Registers[0xF] = 0;
+            Registers[registerX_index] -= Registers[registerY_index];
+#ifndef EMU_TEST
+            std::cout << "SUB V" << (int)registerX_index << ", V" << (int)registerY_index;
+#endif
+            return OpcodeStatus::IncrementPC;
+        }
+        else if ((opcode & 0xF) == 0x6)
+        {
+            uint8_t registerX_index = (opcode >> 8) & 0xF;
+            uint8_t registerY_index = (opcode >> 4) & 0xF;
+            Registers[0xF] = Registers[registerX_index] & 0x1;
+            Registers[registerX_index] >>= 1;
+#ifndef EMU_TEST
+            std::cout << "SHR V" << (int)registerX_index << "{, V" << (int)registerY_index << "}";
+#endif
+            return OpcodeStatus::IncrementPC;
+        }
+        else if ((opcode & 0xF) == 0x7)
+        {
+            uint8_t registerX_index = (opcode >> 8) & 0xF;
+            uint8_t registerY_index = (opcode >> 4) & 0xF;
+            if (Registers[registerY_index] > Registers[registerX_index])
+                Registers[0xF] = 1;
+            else
+                Registers[0xF] = 0;
+            Registers[registerX_index] = Registers[registerY_index] - Registers[registerX_index];
+#ifndef EMU_TEST
+            std::cout << "SUB V" << (int)registerX_index << ", V" << (int)registerY_index;
+#endif
+            return OpcodeStatus::IncrementPC;
+        }
         else if ((opcode & 0xF) == 0xE)
         {
             uint8_t registerX_index = (opcode >> 8) & 0xF;
@@ -430,7 +491,19 @@ namespace chipotto
 
     OpcodeStatus Emulator::Opcode9(const uint16_t opcode)
     {
-        return OpcodeStatus::NotImplemented;
+        if ((opcode & 0xF) == 0x0)
+        {
+            uint8_t registerX_index = (opcode >> 8) & 0xF;
+            uint8_t registerY_index = (opcode >> 4) & 0xF;
+            if(Registers[registerX_index] != Registers[registerY_index])
+            {
+                PC += 2;
+            }
+#ifndef EMU_TEST
+            std::cout << "SNE V" << (int)registerX_index << ", V" << (int)registerY_index;
+#endif
+            return OpcodeStatus::IncrementPC;
+        }
     }
 
     OpcodeStatus Emulator::OpcodeA(const uint16_t opcode)
@@ -445,7 +518,12 @@ namespace chipotto
 
     OpcodeStatus Emulator::OpcodeB(const uint16_t opcode)
     {
-        return OpcodeStatus::NotImplemented;
+        uint16_t address = (opcode & 0x0FFF);
+#ifndef EMU_TEST
+        std::cout << "JP V0, 0x" << address;
+#endif
+        PC = address + Registers[0x0];
+        return OpcodeStatus::IncrementPC;
     }
 
     OpcodeStatus Emulator::OpcodeC(const uint16_t opcode)
@@ -527,7 +605,7 @@ namespace chipotto
 #ifndef EMU_TEST
             std::cout << "SKNP V" << (int)register_index;
 #endif
-            const uint8_t *keys_state = SDL_GetKeyboardState(nullptr);
+            const uint8_t *keys_state = input_class->GetKeyboardState();
             if (keys_state[KeyboardValuesMap[Registers[register_index]]] == 0)
             {
                 PC += 2;
@@ -540,7 +618,7 @@ namespace chipotto
 #ifndef EMU_TEST
             std::cout << "SKP V" << (int)register_index;
 #endif
-            const uint8_t *keys_state = SDL_GetKeyboardState(nullptr);
+            const uint8_t *keys_state = input_class->GetKeyboardState();
             if (keys_state[KeyboardValuesMap[Registers[register_index]]] == 1)
             {
                 PC += 2;
@@ -616,14 +694,6 @@ namespace chipotto
             I += Registers[register_index];
             return OpcodeStatus::IncrementPC;
         }
-        else if ((opcode & 0xFF) == 0x18)
-        {
-            uint8_t register_index = (opcode >> 8) & 0xF;
-#ifndef EMU_TEST
-            std::cout << "LD ST, V" << (int)register_index;
-#endif
-            return OpcodeStatus::IncrementPC;
-        }
         else if ((opcode & 0xFF) == 0x15)
         {
             uint8_t register_index = (opcode >> 8) & 0xF;
@@ -632,6 +702,16 @@ namespace chipotto
 #endif
             DelayTimer = Registers[register_index];
             DeltaTimerTicks = 17 + SDL_GetTicks64();
+            return OpcodeStatus::IncrementPC;
+        }
+        else if ((opcode & 0xFF) == 0x18)
+        {
+            uint8_t register_index = (opcode >> 8) & 0xF;
+#ifndef EMU_TEST
+            std::cout << "LD ST, V" << (int)register_index;
+#endif
+            SoundTimer = Registers[register_index];
+            SoundTimerTicks = 17 + SDL_GetTicks64();
             return OpcodeStatus::IncrementPC;
         }
         else if ((opcode & 0xFF) == 0x07)
@@ -660,6 +740,7 @@ namespace chipotto
         Suspended = false;
 		WaitForKeyboardRegister_Index = 0;
 		DeltaTimerTicks = 0;
+        SoundTimerTicks = 0;
 
         memset(MemoryMapping.data(), 0, MemoryMapping.size() * sizeof(uint8_t));
         memset(Registers.data(), 0, Registers.size() * sizeof(uint8_t));
@@ -674,5 +755,11 @@ namespace chipotto
         SDL_UnlockTexture(Texture);
         SDL_RenderCopy(Renderer, Texture, nullptr, nullptr);
         SDL_RenderPresent(Renderer);
+    }
+
+
+    const uint8_t *EmulatorInput::GetKeyboardState()
+    {
+        return SDL_GetKeyboardState(nullptr);   //returns the actual keyboard state
     }
 }

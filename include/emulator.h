@@ -11,6 +11,13 @@
 
 namespace chipotto
 {
+	class IInput
+	{
+		public:
+		virtual const uint8_t* GetKeyboardState() = 0;
+		virtual ~IInput() = default;
+	};
+
 	enum class OpcodeStatus
 	{
 		IncrementPC,
@@ -82,6 +89,7 @@ namespace chipotto
 	inline uint16_t GetPC() const {return PC;}
 	inline uint16_t GetI() const {return I;}
 	inline void SetI(const uint16_t new_i) {I = new_i;}
+	inline void SetSP(const uint8_t new_sp) {SP = new_sp;}
 	inline uint8_t GetSP() const {return SP;}
 	inline bool GetIsSuspended() const {return Suspended;}
 	inline int GetWidth() const {return width;}
@@ -89,9 +97,12 @@ namespace chipotto
 	inline uint8_t GetDelayTimer() const {return DelayTimer;}
 	inline uint8_t GetSoundTimer() const {return SoundTimer;}
 	inline SDL_Texture* GetTexture() const {return Texture;}
+	inline SDL_Renderer* GetRenderer() const {return Renderer;}
 	inline std::array<uint8_t, 0x1000>& GetMemoryMapping() {return MemoryMapping;}
 	inline std::array<uint8_t, 0x10>& GetRegisters() {return Registers;}
 	inline std::array<uint16_t, 0x10>& GetStack() {return Stack;}
+	inline IInput* GetInputClass() {return input_class;}
+	inline void SetInputClass(IInput* new_input_class) {input_class = new_input_class;}
 #endif //EMU_TEST
 
 	private:
@@ -115,12 +126,21 @@ namespace chipotto
 		bool Suspended = false;
 		uint8_t WaitForKeyboardRegister_Index = 0;
 		uint64_t DeltaTimerTicks = 0;
+		uint64_t SoundTimerTicks = 0;
 
 		SDL_Window* Window = nullptr;
 		SDL_Renderer* Renderer = nullptr;
 		SDL_Texture* Texture = nullptr;
 		int width = 64;
 		int height = 32;
+
+		IInput* input_class = nullptr;
+	};
+
+	class EmulatorInput : public IInput
+	{
+		public:
+		virtual const uint8_t* GetKeyboardState() override;
 	};
 }
 
