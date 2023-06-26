@@ -1,4 +1,4 @@
-# Chip8 Emulator
+# Chip8 Emulator ![workflow](https://github.com/DC20-dev/Chip8Emulator/actions/workflows/build.yml/badge.svg?event=push?branch=main)
 
 A fully featured Chip8 Emulator written in C++  for fun!
 
