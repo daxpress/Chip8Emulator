@@ -19,7 +19,7 @@ Simply Run `Chip8Emulator.exe` and have fun!
 The key bindings are the following:
 
 | Key | Emulator Pad |
-| ---- | ----- |
+| :----: | :-----: |
 | 1 | 1 |
 | 2 | 2 |
 | 3 | 3 |
