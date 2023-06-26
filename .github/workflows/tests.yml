@@ -2,7 +2,7 @@ name: tests
 
 on:
   workflow_run:
-    workflows: build
+    workflows: ["build"]
 
 env:
   # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)
