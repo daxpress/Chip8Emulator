@@ -486,7 +486,7 @@ CLOVE_TEST(RND_VX_BYTE_WITH_MOCK)
     delete random_mock;
 }
 
-CLOVE_TEST(DRW_VX_VY_NIBBLE_NO_COLLISION) // needs fixing
+CLOVE_TEST(DRW_VX_VY_NIBBLE_NO_COLLISION)
 {
     emulator->SetI(0x00);   // "0" location
     auto& registers = emulator->GetRegisters();
@@ -530,7 +530,7 @@ CLOVE_TEST(DRW_VX_VY_NIBBLE_NO_COLLISION) // needs fixing
     CLOVE_INT_EQ(0, comp_res_row_4);
 }
 
-CLOVE_TEST(DRW_VX_VY_NIBBLE_COLLISION) // needs fixing
+CLOVE_TEST(DRW_VX_VY_NIBBLE_COLLISION) 
 {
     emulator->SetI(0x05);   // "1" location
     auto& registers = emulator->GetRegisters();
@@ -573,6 +573,234 @@ CLOVE_TEST(DRW_VX_VY_NIBBLE_COLLISION) // needs fixing
     CLOVE_INT_EQ(0, comp_res_row_2);
     CLOVE_INT_EQ(0, comp_res_row_3);
     CLOVE_INT_EQ(0, comp_res_row_4);
+}
+
+CLOVE_TEST(DRW_VX_VY_NIBBLE_WRAP_HORIZONTAL) 
+{
+    emulator->SetDoWrap(true);
+
+    emulator->SetI(0x00);   // "0" location
+    auto& registers = emulator->GetRegisters();
+
+    registers[0x1] = 0x3E;
+    registers[0x2] = 0x00;
+
+    uint8_t expected_sprite[] = 
+    {
+        0xFF,0xFF,0xFF,0xFF,    0xFF,0xFF,0xFF,0xFF,    0xFF,0xFF,0xFF,0xFF,    0xFF,0xFF,0xFF,0xFF,
+        0xFF,0xFF,0xFF,0xFF,    0x00,0x00,0x00,0x00,    0x00,0x00,0x00,0x00,    0xFF,0xFF,0xFF,0xFF,
+        0xFF,0xFF,0xFF,0xFF,    0x00,0x00,0x00,0x00,    0x00,0x00,0x00,0x00,    0xFF,0xFF,0xFF,0xFF,
+        0xFF,0xFF,0xFF,0xFF,    0x00,0x00,0x00,0x00,    0x00,0x00,0x00,0x00,    0xFF,0xFF,0xFF,0xFF,
+        0xFF,0xFF,0xFF,0xFF,    0xFF,0xFF,0xFF,0xFF,    0xFF,0xFF,0xFF,0xFF,    0xFF,0xFF,0xFF,0xFF,
+    };
+
+    emulator->OpcodeD(0xD125);
+
+    auto texture = emulator->GetTexture();
+
+    int pitch;
+    uint8_t* pixels;
+
+    if(SDL_LockTexture(texture, nullptr, reinterpret_cast<void**>(&pixels), &pitch) != 0)
+    {
+        CLOVE_FAIL();
+    }
+
+    
+    int comp_res_row_right_0 = memcmp(&pixels[pitch - 8], &expected_sprite[0], 8);
+    int comp_res_row_right_1 = memcmp(&pixels[pitch*2 - 8], &expected_sprite[16], 8);
+    int comp_res_row_right_2 = memcmp(&pixels[pitch*3 - 8], &expected_sprite[32], 8);
+    int comp_res_row_right_3 = memcmp(&pixels[pitch*4 - 8], &expected_sprite[48], 8);
+    int comp_res_row_right_4 = memcmp(&pixels[pitch*5 - 8], &expected_sprite[64], 8);
+
+    int comp_res_row_left_0 = memcmp(&pixels[0], &expected_sprite[8], 8);
+    int comp_res_row_left_1 = memcmp(&pixels[pitch], &expected_sprite[24], 8);
+    int comp_res_row_left_2 = memcmp(&pixels[pitch*2], &expected_sprite[40], 8);
+    int comp_res_row_left_3 = memcmp(&pixels[pitch*3], &expected_sprite[56], 8);
+    int comp_res_row_left_4 = memcmp(&pixels[pitch*4], &expected_sprite[72], 8);
+
+    SDL_UnlockTexture(texture);
+
+    CLOVE_UINT_EQ(0, registers[0xF]);
+
+    CLOVE_INT_EQ(0, comp_res_row_right_0);
+    CLOVE_INT_EQ(0, comp_res_row_right_1);
+    CLOVE_INT_EQ(0, comp_res_row_right_2);
+    CLOVE_INT_EQ(0, comp_res_row_right_3);
+    CLOVE_INT_EQ(0, comp_res_row_right_4);
+
+    CLOVE_INT_EQ(0, comp_res_row_left_0);
+    CLOVE_INT_EQ(0, comp_res_row_left_1);
+    CLOVE_INT_EQ(0, comp_res_row_left_2);
+    CLOVE_INT_EQ(0, comp_res_row_left_3);
+    CLOVE_INT_EQ(0, comp_res_row_left_4);
+
+    emulator->SetDoWrap(false);
+}
+
+CLOVE_TEST(DRW_VX_VY_NIBBLE_NO_WRAP_HORIZONTAL) 
+{
+    emulator->SetDoWrap(false);
+
+    emulator->SetI(0x00);   // "0" location
+    auto& registers = emulator->GetRegisters();
+
+    registers[0x1] = 0x3E;
+    registers[0x2] = 0x00;
+
+    uint8_t expected_sprite[] = 
+    {
+        0xFF,0xFF,0xFF,0xFF,    0xFF,0xFF,0xFF,0xFF,    0x00,0x00,0x00,0x00,    0x00,0x00,0x00,0x00,
+        0xFF,0xFF,0xFF,0xFF,    0x00,0x00,0x00,0x00,    0x00,0x00,0x00,0x00,    0x00,0x00,0x00,0x00,
+        0xFF,0xFF,0xFF,0xFF,    0x00,0x00,0x00,0x00,    0x00,0x00,0x00,0x00,    0x00,0x00,0x00,0x00,
+        0xFF,0xFF,0xFF,0xFF,    0x00,0x00,0x00,0x00,    0x00,0x00,0x00,0x00,    0x00,0x00,0x00,0x00,
+        0xFF,0xFF,0xFF,0xFF,    0xFF,0xFF,0xFF,0xFF,    0x00,0x00,0x00,0x00,    0x00,0x00,0x00,0x00,
+    };
+
+    emulator->OpcodeD(0xD125);
+
+    auto texture = emulator->GetTexture();
+
+    int pitch;
+    uint8_t* pixels;
+
+    if(SDL_LockTexture(texture, nullptr, reinterpret_cast<void**>(&pixels), &pitch) != 0)
+    {
+        CLOVE_FAIL();
+    }
+    
+    int comp_res_row_right_0 = memcmp(&pixels[pitch - 8], &expected_sprite[0], 8);
+    int comp_res_row_right_1 = memcmp(&pixels[pitch*2 - 8], &expected_sprite[16], 8);
+    int comp_res_row_right_2 = memcmp(&pixels[pitch*3 - 8], &expected_sprite[32], 8);
+    int comp_res_row_right_3 = memcmp(&pixels[pitch*4 - 8], &expected_sprite[48], 8);
+    int comp_res_row_right_4 = memcmp(&pixels[pitch*5 - 8], &expected_sprite[64], 8);
+
+    int comp_res_row_left_0 = memcmp(&pixels[0], &expected_sprite[8], 8);
+    int comp_res_row_left_1 = memcmp(&pixels[pitch], &expected_sprite[24], 8);
+    int comp_res_row_left_2 = memcmp(&pixels[pitch*2], &expected_sprite[40], 8);
+    int comp_res_row_left_3 = memcmp(&pixels[pitch*3], &expected_sprite[56], 8);
+    int comp_res_row_left_4 = memcmp(&pixels[pitch*4], &expected_sprite[72], 8);
+
+    SDL_UnlockTexture(texture);
+
+    CLOVE_UINT_EQ(0, registers[0xF]);
+
+    CLOVE_INT_EQ(0, comp_res_row_right_0);
+    CLOVE_INT_EQ(0, comp_res_row_right_1);
+    CLOVE_INT_EQ(0, comp_res_row_right_2);
+    CLOVE_INT_EQ(0, comp_res_row_right_3);
+    CLOVE_INT_EQ(0, comp_res_row_right_4);
+
+    CLOVE_INT_EQ(0, comp_res_row_left_0);
+    CLOVE_INT_EQ(0, comp_res_row_left_1);
+    CLOVE_INT_EQ(0, comp_res_row_left_2);
+    CLOVE_INT_EQ(0, comp_res_row_left_3);
+    CLOVE_INT_EQ(0, comp_res_row_left_4);
+}
+
+
+CLOVE_TEST(DRW_VX_VY_NIBBLE_WRAP_VERTICAL) 
+{
+    emulator->SetDoWrap(true);
+
+    emulator->SetI(0x00);   // "0" location
+    auto& registers = emulator->GetRegisters();
+
+    registers[0x1] = 0x00;
+    registers[0x2] = 0x1E;
+
+    uint8_t expected_sprite[] = 
+    {
+        0xFF,0xFF,0xFF,0xFF,    0xFF,0xFF,0xFF,0xFF,    0xFF,0xFF,0xFF,0xFF,    0xFF,0xFF,0xFF,0xFF,
+        0xFF,0xFF,0xFF,0xFF,    0x00,0x00,0x00,0x00,    0x00,0x00,0x00,0x00,    0xFF,0xFF,0xFF,0xFF,
+        0xFF,0xFF,0xFF,0xFF,    0x00,0x00,0x00,0x00,    0x00,0x00,0x00,0x00,    0xFF,0xFF,0xFF,0xFF,
+        0xFF,0xFF,0xFF,0xFF,    0x00,0x00,0x00,0x00,    0x00,0x00,0x00,0x00,    0xFF,0xFF,0xFF,0xFF,
+        0xFF,0xFF,0xFF,0xFF,    0xFF,0xFF,0xFF,0xFF,    0xFF,0xFF,0xFF,0xFF,    0xFF,0xFF,0xFF,0xFF,
+    };
+
+    emulator->OpcodeD(0xD125);
+
+    auto texture = emulator->GetTexture();
+
+    int pitch;
+    uint8_t* pixels;
+
+    if(SDL_LockTexture(texture, nullptr, reinterpret_cast<void**>(&pixels), &pitch) != 0)
+    {
+        CLOVE_FAIL();
+    }
+
+    
+    int comp_res_row_up_0 = memcmp(&pixels[0], &expected_sprite[32], 16);
+    int comp_res_row_up_1 = memcmp(&pixels[pitch], &expected_sprite[48], 16);
+    int comp_res_row_up_2 = memcmp(&pixels[pitch*2], &expected_sprite[64], 16);
+
+    int comp_res_row_down_0 = memcmp(&pixels[pitch*30], &expected_sprite[0], 16);
+    int comp_res_row_down_1 = memcmp(&pixels[pitch*31], &expected_sprite[16], 16);
+
+    SDL_UnlockTexture(texture);
+
+    CLOVE_UINT_EQ(0, registers[0xF]);
+
+    CLOVE_INT_EQ(0, comp_res_row_up_0);
+    CLOVE_INT_EQ(0, comp_res_row_up_1);
+    CLOVE_INT_EQ(0, comp_res_row_up_2);
+
+    CLOVE_INT_EQ(0, comp_res_row_down_0);
+    CLOVE_INT_EQ(0, comp_res_row_down_1);
+
+    emulator->SetDoWrap(false);
+}
+
+CLOVE_TEST(DRW_VX_VY_NIBBLE_NO_WRAP_VERTICAL) 
+{
+    emulator->SetDoWrap(false);
+
+    emulator->SetI(0x00);   // "0" location
+    auto& registers = emulator->GetRegisters();
+
+    registers[0x1] = 0x00;
+    registers[0x2] = 0x1E;
+
+    uint8_t expected_sprite[] = 
+    {
+        0xFF,0xFF,0xFF,0xFF,    0xFF,0xFF,0xFF,0xFF,    0xFF,0xFF,0xFF,0xFF,    0xFF,0xFF,0xFF,0xFF,
+        0xFF,0xFF,0xFF,0xFF,    0x00,0x00,0x00,0x00,    0x00,0x00,0x00,0x00,    0xFF,0xFF,0xFF,0xFF,
+        0x00,0x00,0x00,0x00,    0x00,0x00,0x00,0x00,    0x00,0x00,0x00,0x00,    0x00,0x00,0x00,0x00,
+        0x00,0x00,0x00,0x00,    0x00,0x00,0x00,0x00,    0x00,0x00,0x00,0x00,    0x00,0x00,0x00,0x00,
+        0x00,0x00,0x00,0x00,    0x00,0x00,0x00,0x00,    0x00,0x00,0x00,0x00,    0x00,0x00,0x00,0x00,
+    };
+
+    emulator->OpcodeD(0xD125);
+
+    auto texture = emulator->GetTexture();
+
+    int pitch;
+    uint8_t* pixels;
+
+    if(SDL_LockTexture(texture, nullptr, reinterpret_cast<void**>(&pixels), &pitch) != 0)
+    {
+        CLOVE_FAIL();
+    }
+
+    
+    int comp_res_row_up_0 = memcmp(&pixels[0], &expected_sprite[32], 16);
+    int comp_res_row_up_1 = memcmp(&pixels[pitch], &expected_sprite[48], 16);
+    int comp_res_row_up_2 = memcmp(&pixels[pitch*2], &expected_sprite[64], 16);
+
+    int comp_res_row_down_0 = memcmp(&pixels[pitch*30], &expected_sprite[0], 16);
+    int comp_res_row_down_1 = memcmp(&pixels[pitch*31], &expected_sprite[16], 16);
+
+    SDL_UnlockTexture(texture);
+
+    CLOVE_UINT_EQ(0, registers[0xF]);
+
+    CLOVE_INT_EQ(0, comp_res_row_up_0);
+    CLOVE_INT_EQ(0, comp_res_row_up_1);
+    CLOVE_INT_EQ(0, comp_res_row_up_2);
+
+    CLOVE_INT_EQ(0, comp_res_row_down_0);
+    CLOVE_INT_EQ(0, comp_res_row_down_1);
 }
 
 CLOVE_TEST(SKP_VX_PRESSED)

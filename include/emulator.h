@@ -90,6 +90,8 @@ namespace chipotto
 
 		void HardResetEmulator();
 
+		inline void SetDoWrap(const bool do_wrap) { DoWrap = do_wrap;}
+
 #ifdef EMU_TEST
 	public:
 	inline uint16_t GetPC() const {return PC;}
@@ -142,6 +144,7 @@ namespace chipotto
 		SDL_Texture* Texture = nullptr;
 		int width = 64;
 		int height = 32;
+		bool DoWrap = false;
 
 		IInputCommand* input_class = nullptr;
 		IRandomGenerator* random_generator = nullptr;

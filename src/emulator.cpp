@@ -567,7 +567,7 @@ namespace chipotto
 
         for (int y = 0; y < sprite_height; ++y)
         {
-            if (y + y_coord >= height)
+            if (!DoWrap && y + y_coord >= height)
                 break;
             uint8_t row_byte = MemoryMapping[I + y];
             for (int x = 0; x < 8; x++)
@@ -578,9 +578,9 @@ namespace chipotto
                 {
                     color = 0xFF;
                 }
-                if (x + x_coord >= width)
+                if (!DoWrap && x + x_coord >= width)
                     break;
-                int pixel_index = (x + x_coord) * 4 + pitch * (y + y_coord);
+                int pixel_index = ((x + x_coord)%width) * 4 + pitch * ((y + y_coord)%height);
                 uint8_t existing_pixel = pixels[pixel_index];
                 color ^= existing_pixel;
 
