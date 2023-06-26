@@ -46,5 +46,5 @@ target_include_directories(Chip8Tests PUBLIC include SDL2/include src)
 
 target_link_libraries(Chip8Tests ${PROJECT_SOURCE_DIR}/SDL2/lib/x64/SDL2.lib)
 
-add_test(NAME Chip8Tests COMMAND Chip8Tests)
+add_test(NAME Chip8Tests COMMAND Chip8Tests -x)
 
