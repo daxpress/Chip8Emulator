@@ -1,4 +1,4 @@
-# Chip8 Emulator [![build](https://github.com/DC20-dev/Chip8Emulator/actions/workflows/build.yml/badge.svg?branch=main&event=push)](https://github.com/DC20-dev/Chip8Emulator/actions/workflows/build.yml)
+# Chip8 Emulator [![build](https://github.com/DC20-dev/Chip8Emulator/actions/workflows/build.yml/badge.svg)](https://github.com/DC20-dev/Chip8Emulator/actions/workflows/build.yml)
 
 A fully featured Chip8 Emulator written in C++  for fun!
 
@@ -40,7 +40,7 @@ The key bindings are the following:
 **NOTE:** There is currently no loading solution for your own ROMs as this project is intended for demonstration only, but it will be implemented soon enough;
 in the meantime You can bring your TicTacToe skills to the next level :wink:
 
-## Tests [![tests](https://github.com/DC20-dev/Chip8Emulator/actions/workflows/tests.yml/badge.svg?branch=main&event=push)](https://github.com/DC20-dev/Chip8Emulator/actions/workflows/tests.yml)
+## Tests [![tests](https://github.com/DC20-dev/Chip8Emulator/actions/workflows/tests.yml/badge.svg)](https://github.com/DC20-dev/Chip8Emulator/actions/workflows/tests.yml)
 
 The tests are built together with the main executable unless differently specified.
 Full test coverage is not yet present, but all the current tests are passing so it is stable enough to fiddle with.
