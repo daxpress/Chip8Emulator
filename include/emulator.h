@@ -11,11 +11,11 @@
 
 namespace chipotto
 {
-	class IInput
+	class IInputCommand
 	{
 		public:
 		virtual const uint8_t* GetKeyboardState() = 0;
-		virtual ~IInput() = default;
+		virtual ~IInputCommand() = default;
 	};
 
 	enum class OpcodeStatus
@@ -101,8 +101,8 @@ namespace chipotto
 	inline std::array<uint8_t, 0x1000>& GetMemoryMapping() {return MemoryMapping;}
 	inline std::array<uint8_t, 0x10>& GetRegisters() {return Registers;}
 	inline std::array<uint16_t, 0x10>& GetStack() {return Stack;}
-	inline IInput* GetInputClass() {return input_class;}
-	inline void SetInputClass(IInput* new_input_class) {input_class = new_input_class;}
+	inline IInputCommand* GetInputClass() {return input_class;}
+	inline void SetInputClass(IInputCommand* new_input_class) {input_class = new_input_class;}
 #endif //EMU_TEST
 
 	private:
@@ -134,10 +134,10 @@ namespace chipotto
 		int width = 64;
 		int height = 32;
 
-		IInput* input_class = nullptr;
+		IInputCommand* input_class = nullptr;
 	};
 
-	class EmulatorInput : public IInput
+	class KeyboardStateInputCommand : public IInputCommand
 	{
 		public:
 		virtual const uint8_t* GetKeyboardState() override;

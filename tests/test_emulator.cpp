@@ -5,11 +5,11 @@
 #define CLOVE_SUITE_NAME TestEmulator
 
 // class used to mock the keyboard state from SDL and be able to pass custom keyboard states
-class MockInput : public chipotto::IInput
+class MockKeyboardStateInputCommand : public chipotto::IInputCommand
 {
 public:
 	virtual const uint8_t *GetKeyboardState() override{return fake_keyboard_state;}
-    ~MockInput(){if(fake_keyboard_state) delete fake_keyboard_state;}
+    ~MockKeyboardStateInputCommand(){if(fake_keyboard_state) delete fake_keyboard_state;}
 
 	uint8_t *fake_keyboard_state = nullptr;
 };
@@ -499,6 +499,20 @@ CLOVE_TEST(DRW_VX_VY_NIBBLE_NO_COLLISION) // needs fixing
     CLOVE_INT_EQ(0, comp_res_row_4);
 }
 
+CLOVE_TEST(DRW_VX_VY_NIBBLE_COLLISION) // needs fixing
+{
+    emulator->SetI(0x05);   // "1" location
+    auto& registers = emulator->GetRegisters();
+
+    registers[0x1] = 0x0;
+
+    emulator->OpcodeD(0xD115);
+    emulator->SetI(0x00);   // "0" location
+    emulator->OpcodeD(0xD115);
+
+    CLOVE_UINT_EQ(1, registers[0xF]);
+}
+
 CLOVE_TEST(SKP_VX_PRESSED)
 {
     auto& registers = emulator->GetRegisters();
@@ -509,7 +523,7 @@ CLOVE_TEST(SKP_VX_PRESSED)
     auto input_class = emulator->GetInputClass();
     int num_keys;
     SDL_GetKeyboardState(&num_keys);
-    MockInput* mock_input = new MockInput();
+    MockKeyboardStateInputCommand* mock_input = new MockKeyboardStateInputCommand();
     mock_input->fake_keyboard_state = new uint8_t[num_keys];
     emulator->SetInputClass(mock_input);
 
@@ -564,7 +578,7 @@ CLOVE_TEST(SKNP_VX_NOT_PRESSED)
     auto input_class = emulator->GetInputClass();
     int num_keys;
     SDL_GetKeyboardState(&num_keys);
-    MockInput* mock_input = new MockInput();
+    MockKeyboardStateInputCommand* mock_input = new MockKeyboardStateInputCommand();
     mock_input->fake_keyboard_state = new uint8_t[num_keys];
     emulator->SetInputClass(mock_input);
 

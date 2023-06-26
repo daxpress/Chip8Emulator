@@ -72,7 +72,7 @@ namespace chipotto
 			return;
 		}
 
-        input_class = new EmulatorInput();
+        input_class = new KeyboardStateInputCommand();
 	}
 
     Emulator::~Emulator()
@@ -105,6 +105,7 @@ namespace chipotto
 
         file.read(reinterpret_cast<char*>(MemoryMapping.data() + PC), file_size);
         file.close();
+        return true;
 	}
 
     bool Emulator::Tick()
@@ -504,6 +505,7 @@ namespace chipotto
 #endif
             return OpcodeStatus::IncrementPC;
         }
+        return OpcodeStatus::NotIncrementPC;
     }
 
     OpcodeStatus Emulator::OpcodeA(const uint16_t opcode)
@@ -758,7 +760,7 @@ namespace chipotto
     }
 
 
-    const uint8_t *EmulatorInput::GetKeyboardState()
+    const uint8_t *KeyboardStateInputCommand::GetKeyboardState()
     {
         return SDL_GetKeyboardState(nullptr);   //returns the actual keyboard state
     }
