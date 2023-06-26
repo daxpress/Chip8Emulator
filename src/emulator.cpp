@@ -73,6 +73,7 @@ namespace chipotto
 		}
 
         input_class = new KeyboardStateInputCommand();
+        random_generator = new EmulatorRandomGenerator();
 	}
 
     Emulator::~Emulator()
@@ -92,6 +93,10 @@ namespace chipotto
         if(input_class)
         {
             delete input_class;
+        }
+        if(random_generator)
+        {
+            delete random_generator;
         }
     }
 
@@ -535,7 +540,7 @@ namespace chipotto
 #ifndef EMU_TEST
         std::cout << "RND V" << (int)register_index << ", 0x" << (int)random_mask;
 #endif
-        Registers[register_index] = (std::rand() % 256) & random_mask;
+        Registers[register_index] = random_generator->GetRandomByte() & random_mask;
         return OpcodeStatus::IncrementPC;
     }
 
@@ -763,5 +768,10 @@ namespace chipotto
     const uint8_t *KeyboardStateInputCommand::GetKeyboardState()
     {
         return SDL_GetKeyboardState(nullptr);   //returns the actual keyboard state
+    }
+
+    uint8_t EmulatorRandomGenerator::GetRandomByte()
+    {
+        return (std::rand() % 256);
     }
 }

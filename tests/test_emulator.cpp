@@ -4,6 +4,7 @@
 
 #define CLOVE_SUITE_NAME TestEmulator
 
+#pragma region MOCKS
 // class used to mock the keyboard state from SDL and be able to pass custom keyboard states
 class MockKeyboardStateInputCommand : public chipotto::IInputCommand
 {
@@ -13,6 +14,14 @@ public:
 
 	uint8_t *fake_keyboard_state = nullptr;
 };
+
+class MockRandomGenerator : public chipotto::IRandomGenerator
+{
+public:
+    virtual uint8_t GetRandomByte() override { return 0xFF;}
+};
+
+#pragma endregion //MOCKS
 
 
 chipotto::Emulator* emulator = nullptr;
@@ -445,7 +454,7 @@ CLOVE_TEST(JP_V0_ADDR)
     CLOVE_UINT_EQ(0x10+0x220, pc);
 }
 
-CLOVE_TEST(RND_VX_BYTE_AND_TEST)
+CLOVE_TEST(RND_VX_BYTE_NO_MOCK)
 {
     auto& registers = emulator->GetRegisters();
     registers[0x0] = 0x10;
@@ -453,6 +462,28 @@ CLOVE_TEST(RND_VX_BYTE_AND_TEST)
     emulator->OpcodeC(0xC000);
 
     CLOVE_UINT_EQ(0x0, registers[0x0]);
+}
+
+CLOVE_TEST(RND_VX_BYTE_WITH_MOCK)
+{
+    auto& registers = emulator->GetRegisters();
+    registers[0x0] = 0x00;
+    registers[0x2] = 0x00;
+
+    auto* actual_generator = emulator->GetRandGenerator();
+    auto* random_mock = new MockRandomGenerator();
+    emulator->SetRandomGenerator(random_mock);
+
+    emulator->OpcodeC(0xC0FA);
+
+    CLOVE_UINT_EQ(0xFA, registers[0x0]);
+
+    emulator->OpcodeC(0xC203);
+
+    CLOVE_UINT_EQ(0x03, registers[0x2]);
+
+    emulator->SetRandomGenerator(actual_generator);
+    delete random_mock;
 }
 
 CLOVE_TEST(DRW_VX_VY_NIBBLE_NO_COLLISION) // needs fixing

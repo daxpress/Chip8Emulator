@@ -18,6 +18,12 @@ namespace chipotto
 		virtual ~IInputCommand() = default;
 	};
 
+	class IRandomGenerator
+	{
+		public:
+		virtual uint8_t GetRandomByte() = 0;
+	};
+
 	enum class OpcodeStatus
 	{
 		IncrementPC,
@@ -103,6 +109,9 @@ namespace chipotto
 	inline std::array<uint16_t, 0x10>& GetStack() {return Stack;}
 	inline IInputCommand* GetInputClass() {return input_class;}
 	inline void SetInputClass(IInputCommand* new_input_class) {input_class = new_input_class;}
+	inline IRandomGenerator* GetRandGenerator() {return random_generator;}
+	inline void SetRandomGenerator(IRandomGenerator* new_rand_gen) {random_generator = new_rand_gen;}
+
 #endif //EMU_TEST
 
 	private:
@@ -135,12 +144,19 @@ namespace chipotto
 		int height = 32;
 
 		IInputCommand* input_class = nullptr;
+		IRandomGenerator* random_generator = nullptr;
 	};
 
 	class KeyboardStateInputCommand : public IInputCommand
 	{
 		public:
 		virtual const uint8_t* GetKeyboardState() override;
+	};
+
+	class EmulatorRandomGenerator : public IRandomGenerator
+	{
+		public:
+		virtual uint8_t GetRandomByte() override;
 	};
 }
 
