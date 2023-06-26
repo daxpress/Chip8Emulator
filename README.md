@@ -18,24 +18,24 @@ Simply Run `Chip8Emulator.exe` and have fun!
 
 The key bindings are the following:
 
-| Key | | Emulator Pad |
-| ---- | | ----- |
-| 1 | | 1 |
-| 2 | | 2 |
-| 3 | | 3 |
-| 4 | | C |
-| Q | | 4 |
-| W | | 5 |
-| E | | 6 |
-| R | | D |
-| A | | 7 |
-| S | | 8 |
-| D | | 9 |
-| F | | E |
-| Z | | A |
-| X | | 0 |
-| C | | B |
-| V | | F |
+| Key | Emulator Pad |
+| ---- | ----- |
+| 1 | 1 |
+| 2 | 2 |
+| 3 | 3 |
+| 4 | C |
+| Q | 4 |
+| W | 5 |
+| E | 6 |
+| R | D |
+| A | 7 |
+| S | 8 |
+| D | 9 |
+| F | E |
+| Z | A |
+| X | 0 |
+| C | B |
+| V | F |
 
 **NOTE:** There is currently no loading solution for your own ROMs as this project is intended for demonstration only, but it will be implemented soon enough;
 in the meantime You can bring your TicTacToe skills to the next level :wink:
