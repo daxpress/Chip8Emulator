@@ -47,6 +47,7 @@ namespace chipotto
 			return true;
 		}
 
+#pragma region Opcode Categories
 
 		OpcodeStatus Opcode0(const uint16_t opcode);
 
@@ -79,6 +80,48 @@ namespace chipotto
 		OpcodeStatus OpcodeE(const uint16_t opcode);
 
 		OpcodeStatus OpcodeF(const uint16_t opcode);
+
+#pragma endregion
+
+#pragma region Opcode Instructions
+
+		OpcodeStatus CLS();
+		OpcodeStatus RET();
+		OpcodeStatus JP(uint16_t address);
+		OpcodeStatus CALL(uint16_t address);
+		OpcodeStatus SE_VX_BYTE(uint8_t Vx, uint8_t byte);
+		OpcodeStatus SNE_VX_BYTE(uint8_t Vx, uint8_t byte);
+		OpcodeStatus SE_VX_VY(uint8_t Vx, uint8_t Vy);
+		OpcodeStatus LD_VX_BYTE(uint8_t Vx, uint8_t byte);
+		OpcodeStatus ADD_VX_BYTE(uint8_t Vx, uint8_t byte);
+		OpcodeStatus LD_VX_VY(uint8_t Vx, uint8_t Vy);
+		OpcodeStatus OR_VX_VY(uint8_t Vx, uint8_t Vy);
+		OpcodeStatus AND_VX_VY(uint8_t Vx, uint8_t Vy);
+		OpcodeStatus XOR_VX_VY(uint8_t Vx, uint8_t Vy);
+		OpcodeStatus ADD_VX_VY(uint8_t Vx, uint8_t Vy);
+		OpcodeStatus SUB_VX_VY(uint8_t Vx, uint8_t Vy);
+		OpcodeStatus SHR_VX_VY(uint8_t Vx, uint8_t Vy);
+		OpcodeStatus SUBN_VX_VY(uint8_t Vx, uint8_t Vy);
+		OpcodeStatus SHL_VX_VY(uint8_t Vx, uint8_t Vy);
+		OpcodeStatus SNE_VX_VY(uint8_t Vx, uint8_t Vy);
+		OpcodeStatus LD_I_ADDR(uint16_t address);
+		OpcodeStatus JP_V0_ADDR(uint16_t address);
+		OpcodeStatus RND_VX_BYTE(uint8_t Vx, uint8_t bytemask);
+		OpcodeStatus DRW_VX_VY_NIBBLE(uint8_t Vx, uint8_t Vy, uint8_t n_byte);
+		OpcodeStatus SKP_VX(uint8_t Vx);
+		OpcodeStatus SKNP_VX(uint8_t Vx);
+		OpcodeStatus LD_VX_DT(uint8_t Vx);
+		OpcodeStatus LD_VX_K(uint8_t Vx);
+		OpcodeStatus LD_DT_VX(uint8_t Vx);
+		OpcodeStatus LD_ST_VX(uint8_t Vx);
+		OpcodeStatus ADD_I_VX(uint8_t Vx);
+		OpcodeStatus LD_F_VX(uint8_t Vx);
+		OpcodeStatus LD_B_VX(uint8_t Vx);
+		OpcodeStatus LD_I_VX(uint8_t Vx);
+		OpcodeStatus LD_VX_I(uint8_t Vx);
+
+
+#pragma endregion
 
 		void HardResetEmulator();
 

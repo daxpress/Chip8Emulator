@@ -270,39 +270,208 @@ namespace chipotto
 		MemoryMapping[0x4A] = 0x80;
     }
 
+#pragma region Opcode Categories
+
     OpcodeStatus Emulator::Opcode0(const uint16_t opcode)
     {
-        if ((opcode & 0xFF) == 0xE0)
+        switch (opcode & 0xFF)
         {
-#ifndef EMU_TEST
-            std::cout << "CLS";
-#endif
-            uint8_t *pixels = nullptr;
-            int pitch;
-            int result = SDL_LockTexture(Texture, nullptr, reinterpret_cast<void **>(&pixels), &pitch);
-            memset(pixels, 0, pitch * height);
-            SDL_UnlockTexture(Texture);
-            SDL_RenderCopy(Renderer, Texture, nullptr, nullptr);
-            SDL_RenderPresent(Renderer);
-            return OpcodeStatus::IncrementPC;
+        case 0xE0:
+            return CLS();
+        case 0xEE:
+            return RET();
+        default:
+            return OpcodeStatus::NotImplemented;    // SYS addr is ignored
         }
-        else if ((opcode & 0xFF) == 0xEE)
-        {
-            if (SP > 0xF && SP < 0xFF)
-                return OpcodeStatus::StackOverflow;
-#ifndef EMU_TEST
-            std::cout << "RET";
-#endif
-            PC = Stack[SP & 0xF];
-            SP -= 1;
-            return OpcodeStatus::IncrementPC;
-        }
-        return OpcodeStatus::NotImplemented;
     }
 
     OpcodeStatus Emulator::Opcode1(const uint16_t opcode)
     {
         uint16_t address = opcode & 0x0FFF;
+        return JP(address);
+    }
+
+    OpcodeStatus Emulator::Opcode2(const uint16_t opcode)
+    {
+        uint16_t address = opcode & 0xFFF;
+        return CALL(address);
+    }
+
+    OpcodeStatus Emulator::Opcode3(const uint16_t opcode)
+    {
+        uint8_t register_index = (opcode >> 8) & 0xF;
+        uint8_t value = opcode & 0xFF;
+        return SE_VX_BYTE(register_index, value);
+    }
+
+    OpcodeStatus Emulator::Opcode4(const uint16_t opcode)
+    {
+        uint8_t register_index = (opcode >> 8) & 0xF;
+        uint8_t value = opcode & 0xFF;
+        return SNE_VX_BYTE(register_index, value);
+    }
+
+    OpcodeStatus Emulator::Opcode5(const uint16_t opcode)
+    {
+        uint8_t register_vx_index = (opcode >> 8) & 0xF;
+        uint8_t register_vy_index = (opcode >> 4) & 0xF;
+        return SE_VX_VY(register_vx_index, register_vy_index);
+    }
+
+    OpcodeStatus Emulator::Opcode6(const uint16_t opcode)
+    {
+        uint8_t register_index = (opcode >> 8) & 0xF;
+        uint8_t register_value = opcode & 0xFF;
+        return LD_VX_BYTE(register_index, register_value);
+    }
+
+    OpcodeStatus Emulator::Opcode7(const uint16_t opcode)
+    {
+        uint8_t register_index = (opcode >> 8) & 0xF;
+        uint8_t value = opcode & 0xFF;
+        return ADD_VX_BYTE(register_index, value);
+    }
+
+    OpcodeStatus Emulator::Opcode8(const uint16_t opcode)
+    {
+        uint8_t registerX_index = (opcode >> 8) & 0xF;
+        uint8_t registerY_index = (opcode >> 4) & 0xF;
+
+        switch (opcode & 0xF)
+        {
+        case 0x0:
+            return LD_VX_VY(registerX_index, registerY_index);
+        case 0x1:
+            return OR_VX_VY(registerX_index, registerY_index);
+        case 0x2:
+            return AND_VX_VY(registerX_index, registerY_index);
+        case 0x3:
+            return XOR_VX_VY(registerX_index, registerY_index);
+        case 0x4:
+            return ADD_VX_VY(registerX_index, registerY_index);
+        case 0x5:
+            return SUB_VX_VY(registerX_index, registerY_index);
+        case 0x6:
+            return SHR_VX_VY(registerX_index, registerY_index);
+        case 0x7:
+            return SUBN_VX_VY(registerX_index, registerY_index);
+        case 0xE:
+            return SHL_VX_VY(registerX_index, registerY_index);
+        default:
+            return OpcodeStatus::NotImplemented;
+        }
+    }
+
+    OpcodeStatus Emulator::Opcode9(const uint16_t opcode)
+    {
+        uint8_t registerX_index = (opcode >> 8) & 0xF;
+        uint8_t registerY_index = (opcode >> 4) & 0xF;
+        return SNE_VX_VY(registerX_index, registerY_index);
+    }
+
+    OpcodeStatus Emulator::OpcodeA(const uint16_t opcode)
+    {
+        uint16_t Addr = (opcode & 0xFFF);
+        return LD_I_ADDR(Addr);
+    }
+
+    OpcodeStatus Emulator::OpcodeB(const uint16_t opcode)
+    {
+        uint16_t address = (opcode & 0x0FFF);
+        return JP_V0_ADDR(address);
+    }
+
+    OpcodeStatus Emulator::OpcodeC(const uint16_t opcode)
+    {
+        uint8_t register_index = (opcode >> 8) & 0xF;
+        uint8_t random_mask = opcode & 0xFF;
+        return RND_VX_BYTE(register_index, random_mask);
+    }
+
+    OpcodeStatus Emulator::OpcodeD(const uint16_t opcode)
+    {
+        uint8_t registerX_index = (opcode >> 8) & 0xF;
+        uint8_t registerY_index = (opcode >> 4) & 0xF;
+        uint8_t sprite_height = opcode & 0xF;
+        return DRW_VX_VY_NIBBLE(registerX_index, registerY_index, sprite_height);
+    }
+
+    OpcodeStatus Emulator::OpcodeE(const uint16_t opcode)
+    {
+        uint8_t register_index = (opcode >> 8) & 0xF;
+        switch (opcode & 0xFF)
+        {
+        case 0x9E:
+            return SKP_VX(register_index);
+        case 0xA1:
+            return SKNP_VX(register_index);
+        default:
+            return OpcodeStatus::NotImplemented;
+        }
+    }
+
+    OpcodeStatus Emulator::OpcodeF(const uint16_t opcode)
+    {
+        uint8_t register_index = (opcode >> 8) & 0xF;
+
+        switch (opcode & 0xFF)
+        {
+        case 0x07:
+            return LD_VX_DT(register_index);
+        case 0x0A:
+            return LD_VX_K(register_index);
+        case 0x15:
+            return LD_DT_VX(register_index);
+        case 0x18:
+            return LD_ST_VX(register_index);
+        case 0x1E:
+            return ADD_I_VX(register_index);
+        case 0x29:
+            return LD_F_VX(register_index);
+        case 0x33:
+            return LD_B_VX(register_index);
+        case 0x55:
+            return LD_I_VX(register_index);
+        case 0x65:
+            return LD_VX_I(register_index);
+        default:
+            return OpcodeStatus::NotImplemented;
+        }
+    }
+
+#pragma endregion
+
+#pragma region Opcode Instructions
+
+    OpcodeStatus Emulator::CLS()
+    {
+#ifndef EMU_TEST
+        std::cout << "CLS";
+#endif
+        uint8_t* pixels = nullptr;
+        int pitch;
+        int result = SDL_LockTexture(Texture, nullptr, reinterpret_cast<void**>(&pixels), &pitch);
+        memset(pixels, 0, pitch * height);
+        SDL_UnlockTexture(Texture);
+        SDL_RenderCopy(Renderer, Texture, nullptr, nullptr);
+        SDL_RenderPresent(Renderer);
+        return OpcodeStatus::IncrementPC;
+    }
+
+    OpcodeStatus Emulator::RET()
+    {
+        if (SP > 0xF && SP < 0xFF)
+            return OpcodeStatus::StackOverflow;
+#ifndef EMU_TEST
+        std::cout << "RET";
+#endif
+        PC = Stack[SP & 0xF];
+        SP -= 1;
+        return OpcodeStatus::IncrementPC;
+    }
+
+    OpcodeStatus Emulator::JP(uint16_t address)
+    {
 #ifndef EMU_TEST
         std::cout << "JP 0x" << address;
 #endif
@@ -310,9 +479,8 @@ namespace chipotto
         return OpcodeStatus::NotIncrementPC;
     }
 
-    OpcodeStatus Emulator::Opcode2(const uint16_t opcode)
+    OpcodeStatus Emulator::CALL(uint16_t address)
     {
-        uint16_t address = opcode & 0xFFF;
 #ifndef EMU_TEST
         std::cout << "CALL 0x" << (int)address;
 #endif
@@ -336,198 +504,173 @@ namespace chipotto
         return OpcodeStatus::NotIncrementPC;
     }
 
-    OpcodeStatus Emulator::Opcode3(const uint16_t opcode)
+    OpcodeStatus Emulator::SE_VX_BYTE(uint8_t Vx, uint8_t byte)
     {
-        uint8_t register_index = (opcode >> 8) & 0xF;
-        uint8_t value = opcode & 0xFF;
 #ifndef EMU_TEST
-        std::cout << "SE V" << (int)register_index << ", 0x" << (int)value;
+        std::cout << "SE V" << (int)Vx << ", 0x" << (int)byte;
 #endif
-        if (Registers[register_index] == value)
+        if (Registers[Vx] == byte)
             PC += 2;
         return OpcodeStatus::IncrementPC;
     }
 
-    OpcodeStatus Emulator::Opcode4(const uint16_t opcode)
+    OpcodeStatus Emulator::SNE_VX_BYTE(uint8_t Vx, uint8_t byte)
     {
-        uint8_t register_index = (opcode >> 8) & 0xF;
-        uint8_t value = opcode & 0xFF;
 #ifndef EMU_TEST
-        std::cout << "SNE V" << (int)register_index << ", 0x" << (int)value;
+        std::cout << "SNE V" << (int)Vx << ", 0x" << (int)byte;
 #endif
-        if (Registers[register_index] != value)
+        if (Registers[Vx] != byte)
             PC += 2;
         return OpcodeStatus::IncrementPC;
     }
 
-    OpcodeStatus Emulator::Opcode5(const uint16_t opcode)
+    OpcodeStatus Emulator::SE_VX_VY(uint8_t Vx, uint8_t Vy)
     {
-        uint8_t register_vx_index = (opcode >> 8) & 0xF;
-        uint8_t register_vy_index = (opcode >> 4) & 0xF;
 #ifndef EMU_TEST
-        std::cout << "SE V" << (int)register_vx_index << ", V" << (int)register_vy_index;
+        std::cout << "SE V" << (int)Vx << ", V" << (int)Vy;
 #endif
-        if (Registers[register_vx_index] == Registers[register_vy_index])
+        if (Registers[Vx] == Registers[Vy])
             PC += 2;
         return OpcodeStatus::IncrementPC;
     }
 
-    OpcodeStatus Emulator::Opcode6(const uint16_t opcode)
+    OpcodeStatus Emulator::LD_VX_BYTE(uint8_t Vx, uint8_t byte)
     {
-        uint8_t register_index = (opcode >> 8) & 0xF;
-        uint8_t register_value = opcode & 0xFF;
-        Registers[register_index] = register_value;
+        Registers[Vx] = byte;
 #ifndef EMU_TEST
-        std::cout << "LD V" << (int)register_index << ", 0x" << (int)register_value;
+        std::cout << "LD V" << (int)Vx << ", 0x" << (int)byte;
 #endif
         return OpcodeStatus::IncrementPC;
     }
 
-    OpcodeStatus Emulator::Opcode7(const uint16_t opcode)
+    OpcodeStatus Emulator::ADD_VX_BYTE(uint8_t Vx, uint8_t byte)
     {
-        uint8_t register_index = (opcode >> 8) & 0xF;
-        uint8_t value = opcode & 0xFF;
 #ifndef EMU_TEST
-        std::cout << "ADD V" << (int)register_index << ", 0x" << (int)value;
+        std::cout << "ADD V" << (int)Vx << ", 0x" << (int)byte;
 #endif
-        Registers[register_index] += value;
+        Registers[Vx] += byte;
         return OpcodeStatus::IncrementPC;
     }
 
-    OpcodeStatus Emulator::Opcode8(const uint16_t opcode)
+    OpcodeStatus Emulator::LD_VX_VY(uint8_t Vx, uint8_t Vy)
     {
-        if ((opcode & 0xF) == 0x0)
-        {
-            uint8_t registerX_index = (opcode >> 8) & 0xF;
-            uint8_t registerY_index = (opcode >> 4) & 0xF;
-            Registers[registerX_index] = Registers[registerY_index];
+        Registers[Vx] = Registers[Vy];
 #ifndef EMU_TEST
-            std::cout << "LD V" << (int)registerX_index << ", V" << (int)registerY_index;
+        std::cout << "LD V" << (int)Vx << ", V" << (int)Vy;
 #endif
-            return OpcodeStatus::IncrementPC;
-        }
-        else if ((opcode & 0xF) == 0x2)
-        {
-            uint8_t registerX_index = (opcode >> 8) & 0xF;
-            uint8_t registerY_index = (opcode >> 4) & 0xF;
-            Registers[registerX_index] &= Registers[registerY_index];
+        return OpcodeStatus::IncrementPC;
+    }
+
+    OpcodeStatus Emulator::OR_VX_VY(uint8_t Vx, uint8_t Vy)
+    {
+        Registers[Vx] |= Registers[Vy];
 #ifndef EMU_TEST
-            std::cout << "AND V" << (int)registerX_index << ", V" << (int)registerY_index;
+        std::cout << "OR V" << (int)Vx << ", V" << (int)Vy;
 #endif
-            return OpcodeStatus::IncrementPC;
-        }
-        else if ((opcode & 0xF) == 0x3)
-        {
-            uint8_t registerX_index = (opcode >> 8) & 0xF;
-            uint8_t registerY_index = (opcode >> 4) & 0xF;
-            Registers[registerX_index] ^= Registers[registerY_index];
+        return OpcodeStatus::IncrementPC;
+    }
+
+    OpcodeStatus Emulator::AND_VX_VY(uint8_t Vx, uint8_t Vy)
+    {
+        Registers[Vx] &= Registers[Vy];
 #ifndef EMU_TEST
-            std::cout << "XOR V" << (int)registerX_index << ", V" << (int)registerY_index;
+        std::cout << "AND V" << (int)Vx << ", V" << (int)Vy;
 #endif
-            return OpcodeStatus::IncrementPC;
-        }
-        else if ((opcode & 0xF) == 0x4)
-        {
-            uint8_t registerX_index = (opcode >> 8) & 0xF;
-            uint8_t registerY_index = (opcode >> 4) & 0xF;
-            int result = static_cast<int>(Registers[registerX_index]) + Registers[registerY_index];
-            if (result > 255)
-                Registers[0xF] = 1;
-            else
-                Registers[0xF] = 0;
-            Registers[registerX_index] += Registers[registerY_index];
+        return OpcodeStatus::IncrementPC;
+    }
+
+    OpcodeStatus Emulator::XOR_VX_VY(uint8_t Vx, uint8_t Vy)
+    {
+        Registers[Vx] ^= Registers[Vy];
 #ifndef EMU_TEST
-            std::cout << "ADD V" << (int)registerX_index << ", V" << (int)registerY_index;
+        std::cout << "XOR V" << (int)Vx << ", V" << (int)Vy;
 #endif
-            return OpcodeStatus::IncrementPC;
-        }
-        else if ((opcode & 0xF) == 0x5)
-        {
-            uint8_t registerX_index = (opcode >> 8) & 0xF;
-            uint8_t registerY_index = (opcode >> 4) & 0xF;
-            if (Registers[registerX_index] > Registers[registerY_index])
-                Registers[0xF] = 1;
-            else
-                Registers[0xF] = 0;
-            Registers[registerX_index] -= Registers[registerY_index];
-#ifndef EMU_TEST
-            std::cout << "SUB V" << (int)registerX_index << ", V" << (int)registerY_index;
-#endif
-            return OpcodeStatus::IncrementPC;
-        }
-        else if ((opcode & 0xF) == 0x6)
-        {
-            uint8_t registerX_index = (opcode >> 8) & 0xF;
-            uint8_t registerY_index = (opcode >> 4) & 0xF;
-            Registers[0xF] = Registers[registerX_index] & 0x1;
-            Registers[registerX_index] >>= 1;
-#ifndef EMU_TEST
-            std::cout << "SHR V" << (int)registerX_index << "{, V" << (int)registerY_index << "}";
-#endif
-            return OpcodeStatus::IncrementPC;
-        }
-        else if ((opcode & 0xF) == 0x7)
-        {
-            uint8_t registerX_index = (opcode >> 8) & 0xF;
-            uint8_t registerY_index = (opcode >> 4) & 0xF;
-            if (Registers[registerY_index] > Registers[registerX_index])
-                Registers[0xF] = 1;
-            else
-                Registers[0xF] = 0;
-            Registers[registerX_index] = Registers[registerY_index] - Registers[registerX_index];
-#ifndef EMU_TEST
-            std::cout << "SUB V" << (int)registerX_index << ", V" << (int)registerY_index;
-#endif
-            return OpcodeStatus::IncrementPC;
-        }
-        else if ((opcode & 0xF) == 0xE)
-        {
-            uint8_t registerX_index = (opcode >> 8) & 0xF;
-            uint8_t registerY_index = (opcode >> 4) & 0xF;
-            Registers[0xF] = Registers[registerX_index] >> 7;
-            Registers[registerX_index] <<= 1;
-#ifndef EMU_TEST
-            std::cout << "SHL V" << (int)registerX_index << "{, V" << (int)registerY_index << "}";
-#endif
-            return OpcodeStatus::IncrementPC;
-        }
+        return OpcodeStatus::IncrementPC;
+    }
+
+    OpcodeStatus Emulator::ADD_VX_VY(uint8_t Vx, uint8_t Vy)
+    {
+        int result = static_cast<int>(Registers[Vx]) + Registers[Vy];
+        if (result > 255)
+            Registers[0xF] = 1;
         else
-        {
-            return OpcodeStatus::NotImplemented;
-        }
-    }
-
-    OpcodeStatus Emulator::Opcode9(const uint16_t opcode)
-    {
-        if ((opcode & 0xF) == 0x0)
-        {
-            uint8_t registerX_index = (opcode >> 8) & 0xF;
-            uint8_t registerY_index = (opcode >> 4) & 0xF;
-            if(Registers[registerX_index] != Registers[registerY_index])
-            {
-                PC += 2;
-            }
+            Registers[0xF] = 0;
+        Registers[Vx] += Registers[Vy];
 #ifndef EMU_TEST
-            std::cout << "SNE V" << (int)registerX_index << ", V" << (int)registerY_index;
+        std::cout << "ADD V" << (int)Vx << ", V" << (int)Vy;
 #endif
-            return OpcodeStatus::IncrementPC;
-        }
-        return OpcodeStatus::NotIncrementPC;
-    }
-
-    OpcodeStatus Emulator::OpcodeA(const uint16_t opcode)
-    {
-        uint16_t value = (opcode & 0xFFF);
-#ifndef EMU_TEST
-        std::cout << "LD I, 0x" << (int)value;
-#endif
-        I = value;
         return OpcodeStatus::IncrementPC;
     }
 
-    OpcodeStatus Emulator::OpcodeB(const uint16_t opcode)
+    OpcodeStatus Emulator::SUB_VX_VY(uint8_t Vx, uint8_t Vy)
     {
-        uint16_t address = (opcode & 0x0FFF);
+        if (Registers[Vx] > Registers[Vy])
+            Registers[0xF] = 1;
+        else
+            Registers[0xF] = 0;
+        Registers[Vx] -= Registers[Vy];
+#ifndef EMU_TEST
+        std::cout << "SUB V" << (int)Vx << ", V" << (int)Vy;
+#endif
+        return OpcodeStatus::IncrementPC;
+    }
+
+    OpcodeStatus Emulator::SHR_VX_VY(uint8_t Vx, uint8_t Vy)
+    {
+        Registers[0xF] = Registers[Vx] & 0x1;
+        Registers[Vx] >>= 1;
+#ifndef EMU_TEST
+        std::cout << "SHR V" << (int)Vx << "{, V" << (int)Vy << "}";
+#endif
+        return OpcodeStatus::IncrementPC;
+    }
+
+    OpcodeStatus Emulator::SUBN_VX_VY(uint8_t Vx, uint8_t Vy)
+    {
+        if (Registers[Vy] > Registers[Vx])
+            Registers[0xF] = 1;
+        else
+            Registers[0xF] = 0;
+        Registers[Vx] = Registers[Vy] - Registers[Vx];
+#ifndef EMU_TEST
+        std::cout << "SUBN V" << (int)Vx << ", V" << (int)Vy;
+#endif
+        return OpcodeStatus::IncrementPC;
+    }
+
+    OpcodeStatus Emulator::SHL_VX_VY(uint8_t Vx, uint8_t Vy)
+    {
+        Registers[0xF] = Registers[Vx] >> 7;
+        Registers[Vx] <<= 1;
+#ifndef EMU_TEST
+        std::cout << "SHL V" << (int)Vx << "{, V" << (int)Vy << "}";
+#endif
+        return OpcodeStatus::IncrementPC;
+    }
+
+    OpcodeStatus Emulator::SNE_VX_VY(uint8_t Vx, uint8_t Vy)
+    {
+        if (Registers[Vx] != Registers[Vy])
+        {
+            PC += 2;
+        }
+#ifndef EMU_TEST
+        std::cout << "SNE V" << (int)Vx << ", V" << (int)Vy;
+#endif
+        return OpcodeStatus::IncrementPC;
+    }
+
+    OpcodeStatus Emulator::LD_I_ADDR(uint16_t address)
+    {
+#ifndef EMU_TEST
+        std::cout << "LD I, 0x" << (int)address;
+#endif
+        I = address;
+        return OpcodeStatus::IncrementPC;
+    }
+
+    OpcodeStatus Emulator::JP_V0_ADDR(uint16_t address)
+    {
 #ifndef EMU_TEST
         std::cout << "JP V0, 0x" << address;
 #endif
@@ -535,39 +678,34 @@ namespace chipotto
         return OpcodeStatus::IncrementPC;
     }
 
-    OpcodeStatus Emulator::OpcodeC(const uint16_t opcode)
+    OpcodeStatus Emulator::RND_VX_BYTE(uint8_t Vx, uint8_t bytemask)
     {
-        uint8_t register_index = (opcode >> 8) & 0xF;
-        uint8_t random_mask = opcode & 0xFF;
 #ifndef EMU_TEST
-        std::cout << "RND V" << (int)register_index << ", 0x" << (int)random_mask;
+        std::cout << "RND V" << (int)Vx << ", 0x" << (int)bytemask;
 #endif
-        Registers[register_index] = random_generator->GetRandomByte() & random_mask;
+        Registers[Vx] = random_generator->GetRandomByte() & bytemask;
         return OpcodeStatus::IncrementPC;
     }
 
-    OpcodeStatus Emulator::OpcodeD(const uint16_t opcode)
+    OpcodeStatus Emulator::DRW_VX_VY_NIBBLE(uint8_t Vx, uint8_t Vy, uint8_t n_byte)
     {
-        uint8_t registerX_index = (opcode >> 8) & 0xF;
-        uint8_t registerY_index = (opcode >> 4) & 0xF;
-        uint8_t sprite_height = opcode & 0xF;
 #ifndef EMU_TEST
-        std::cout << "DRW V" << (int)registerX_index << ", V" << (int)registerY_index << ", " << (int)sprite_height;
+        std::cout << "DRW V" << (int)Vx << ", V" << (int)Vy << ", " << (int)n_byte;
 #endif
 
-        uint8_t x_coord = Registers[registerX_index] % width;
-        uint8_t y_coord = Registers[registerY_index] % height;
+        uint8_t x_coord = Registers[Vx] % width;
+        uint8_t y_coord = Registers[Vy] % height;
 
-        uint8_t *pixels = nullptr;
+        uint8_t* pixels = nullptr;
         int pitch;
-        int result = SDL_LockTexture(Texture, nullptr, reinterpret_cast<void **>(&pixels), &pitch);
+        int result = SDL_LockTexture(Texture, nullptr, reinterpret_cast<void**>(&pixels), &pitch);
         if (result != 0)
         {
             SDL_Log("Failed to lock texture");
             return OpcodeStatus::Error;
         }
 
-        for (int y = 0; y < sprite_height; ++y)
+        for (int y = 0; y < n_byte; ++y)
         {
             if (!DoWrap && y + y_coord >= height)
                 break;
@@ -582,7 +720,7 @@ namespace chipotto
                 }
                 if (!DoWrap && x + x_coord >= width)
                     break;
-                int pixel_index = ((x + x_coord)%width) * 4 + pitch * ((y + y_coord)%height);
+                int pixel_index = ((x + x_coord) % width) * 4 + pitch * ((y + y_coord) % height);
                 uint8_t existing_pixel = pixels[pixel_index];
                 color ^= existing_pixel;
 
@@ -606,137 +744,126 @@ namespace chipotto
         return OpcodeStatus::IncrementPC;
     }
 
-    OpcodeStatus Emulator::OpcodeE(const uint16_t opcode)
+    OpcodeStatus Emulator::SKP_VX(uint8_t Vx)
     {
-        if ((opcode & 0xFF) == 0xA1)
-        {
-            uint8_t register_index = (opcode >> 8) & 0xF;
 #ifndef EMU_TEST
-            std::cout << "SKNP V" << (int)register_index;
+        std::cout << "SKP V" << (int)Vx;
 #endif
-            const uint8_t *keys_state = input_class->GetKeyboardState();
-            if (keys_state[KeyboardValuesMap[Registers[register_index]]] == 0)
-            {
-                PC += 2;
-            }
-            return OpcodeStatus::IncrementPC;
-        }
-        else if ((opcode & 0xFF) == 0x9E)
+        const uint8_t* keys_state = input_class->GetKeyboardState();
+        if (keys_state[KeyboardValuesMap[Registers[Vx]]] == 1)
         {
-            uint8_t register_index = (opcode >> 8) & 0xF;
-#ifndef EMU_TEST
-            std::cout << "SKP V" << (int)register_index;
-#endif
-            const uint8_t *keys_state = input_class->GetKeyboardState();
-            if (keys_state[KeyboardValuesMap[Registers[register_index]]] == 1)
-            {
-                PC += 2;
-            }
-            return OpcodeStatus::IncrementPC;
+            PC += 2;
         }
-        return OpcodeStatus::NotImplemented;
+        return OpcodeStatus::IncrementPC;
     }
 
-    OpcodeStatus Emulator::OpcodeF(const uint16_t opcode)
+    OpcodeStatus Emulator::SKNP_VX(uint8_t Vx)
     {
-        if ((opcode & 0xFF) == 0x55)
-        {
-            uint8_t register_index = (opcode >> 8) & 0xF;
 #ifndef EMU_TEST
-            std::cout << "LD [I], V" << (int)register_index;
+        std::cout << "SKNP V" << (int)Vx;
 #endif
-            for (uint8_t i = 0; i <= register_index; ++i)   // ONE BUG WAS HERE
-            {
-                MemoryMapping[I + i] = Registers[i];
-            }
-            return OpcodeStatus::IncrementPC;
-        }
-        else if ((opcode & 0xFF) == 0x65)
+        const uint8_t* keys_state = input_class->GetKeyboardState();
+        if (keys_state[KeyboardValuesMap[Registers[Vx]]] == 0)
         {
-            uint8_t register_index = (opcode >> 8) & 0xF;
-#ifndef EMU_TEST
-            std::cout << "LD V" << (int)register_index << ", [I]";
-#endif
-            for (uint8_t i = 0; i <= register_index; ++i)   //ONE BUG WAS HERE
-            {
-                Registers[i] = MemoryMapping[I + i];    //ONE BUG WAS HERE
-            }
-            return OpcodeStatus::IncrementPC;
+            PC += 2;
         }
-        else if ((opcode & 0xFF) == 0x33)
-        {
-            uint8_t register_index = (opcode >> 8) & 0xF;
-            uint8_t value = Registers[register_index];
-            MemoryMapping[I] = value / 100;
-            MemoryMapping[I + 1] = (value - (MemoryMapping[I] * 100)) / 10; // ONE BUG WAS HERE
-            MemoryMapping[I + 2] = value % 10;
-#ifndef EMU_TEST
-            std::cout << "LD B, V" << (int)register_index;
-#endif
-            return OpcodeStatus::IncrementPC;
-        }
-        else if ((opcode & 0xFF) == 0x29)
-        {
-            uint8_t register_index = (opcode >> 8) & 0xF;
-#ifndef EMU_TEST
-            std::cout << "LD F, V" << (int)register_index;
-#endif
-            I = 5 * Registers[register_index];
-            return OpcodeStatus::IncrementPC;
-        }
-        else if ((opcode & 0xFF) == 0x0A)
-        {
-            uint8_t register_index = (opcode >> 8) & 0xF;
-#ifndef EMU_TEST
-            std::cout << "LD V" << (int)register_index << ", K";
-#endif
-            WaitForKeyboardRegister_Index = register_index;
-            Suspended = true;
-            return OpcodeStatus::WaitForKeyboard;
-        }
-        else if ((opcode & 0xFF) == 0x1E)
-        {
-            uint8_t register_index = (opcode >> 8) & 0xF;
-#ifndef EMU_TEST
-            std::cout << "ADD I, V" << (int)register_index;
-#endif
-            I += Registers[register_index];
-            return OpcodeStatus::IncrementPC;
-        }
-        else if ((opcode & 0xFF) == 0x15)
-        {
-            uint8_t register_index = (opcode >> 8) & 0xF;
-#ifndef EMU_TEST
-            std::cout << "LD DT, V" << (int)register_index;
-#endif
-            DelayTimer = Registers[register_index];
-            DeltaTimerTicks = 17 + SDL_GetTicks64();
-            return OpcodeStatus::IncrementPC;
-        }
-        else if ((opcode & 0xFF) == 0x18)
-        {
-            uint8_t register_index = (opcode >> 8) & 0xF;
-#ifndef EMU_TEST
-            std::cout << "LD ST, V" << (int)register_index;
-#endif
-            SoundTimer = Registers[register_index];
-            SoundTimerTicks = 17 + SDL_GetTicks64();
-            return OpcodeStatus::IncrementPC;
-        }
-        else if ((opcode & 0xFF) == 0x07)
-        {
-            uint8_t register_index = (opcode >> 8) & 0xF;
-#ifndef EMU_TEST
-            std::cout << "LD V" << (int)register_index << ", DT";
-#endif
-            Registers[register_index] = DelayTimer;
-            return OpcodeStatus::IncrementPC;
-        }
-        else
-        {
-            return OpcodeStatus::NotImplemented;
-        }
+        return OpcodeStatus::IncrementPC;
     }
+
+    OpcodeStatus Emulator::LD_VX_DT(uint8_t Vx)
+    {
+#ifndef EMU_TEST
+        std::cout << "LD V" << (int)Vx << ", DT";
+#endif
+        Registers[Vx] = DelayTimer;
+        return OpcodeStatus::IncrementPC;
+    }
+
+    OpcodeStatus Emulator::LD_VX_K(uint8_t Vx)
+    {
+#ifndef EMU_TEST
+        std::cout << "LD V" << (int)Vx << ", K";
+#endif
+        WaitForKeyboardRegister_Index = Vx;
+        Suspended = true;
+        return OpcodeStatus::WaitForKeyboard;
+    }
+
+    OpcodeStatus Emulator::LD_DT_VX(uint8_t Vx)
+    {
+#ifndef EMU_TEST
+        std::cout << "LD DT, V" << (int)Vx;
+#endif
+        DelayTimer = Registers[Vx];
+        DeltaTimerTicks = 17 + SDL_GetTicks64();
+        return OpcodeStatus::IncrementPC;
+    }
+
+    OpcodeStatus Emulator::LD_ST_VX(uint8_t Vx)
+    {
+#ifndef EMU_TEST
+        std::cout << "LD ST, V" << (int)Vx;
+#endif
+        SoundTimer = Registers[Vx];
+        SoundTimerTicks = 17 + SDL_GetTicks64();
+        return OpcodeStatus::IncrementPC;
+    }
+
+    OpcodeStatus Emulator::ADD_I_VX(uint8_t Vx)
+    {
+#ifndef EMU_TEST
+        std::cout << "ADD I, V" << (int)Vx;
+#endif
+        I += Registers[Vx];
+        return OpcodeStatus::IncrementPC;
+    }
+
+    OpcodeStatus Emulator::LD_F_VX(uint8_t Vx)
+    {
+#ifndef EMU_TEST
+        std::cout << "LD F, V" << (int)Vx;
+#endif
+        I = 5 * Registers[Vx];
+        return OpcodeStatus::IncrementPC;
+    }
+
+    OpcodeStatus Emulator::LD_B_VX(uint8_t Vx)
+    {
+        uint8_t value = Registers[Vx];
+        MemoryMapping[I] = value / 100;
+        MemoryMapping[I + 1] = (value - (MemoryMapping[I] * 100)) / 10; // ONE BUG WAS HERE
+        MemoryMapping[I + 2] = value % 10;
+#ifndef EMU_TEST
+        std::cout << "LD B, V" << (int)Vx;
+#endif
+        return OpcodeStatus::IncrementPC;
+    }
+
+    OpcodeStatus Emulator::LD_I_VX(uint8_t Vx)
+    {
+#ifndef EMU_TEST
+        std::cout << "LD [I], V" << (int)Vx;
+#endif
+        for (uint8_t i = 0; i <= Vx; ++i)   // ONE BUG WAS HERE
+        {
+            MemoryMapping[I + i] = Registers[i];
+        }
+        return OpcodeStatus::IncrementPC;
+    }
+
+    OpcodeStatus Emulator::LD_VX_I(uint8_t Vx)
+    {
+#ifndef EMU_TEST
+        std::cout << "LD V" << (int)Vx << ", [I]";
+#endif
+        for (uint8_t i = 0; i <= Vx; ++i)   //ONE BUG WAS HERE
+        {
+            Registers[i] = MemoryMapping[I + i];    //ONE BUG WAS HERE
+        }
+        return OpcodeStatus::IncrementPC;
+    }
+
+#pragma endregion
 
     void Emulator::HardResetEmulator()
     {
