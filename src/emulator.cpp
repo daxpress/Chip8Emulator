@@ -155,12 +155,12 @@ namespace chipotto
             return true;
 
         uint16_t opcode = MemoryMapping[PC + 1] + (static_cast<uint16_t>(MemoryMapping[PC]) << 8);
-#ifndef EMU_TEST
+#ifdef DEBUG_BUILD
         std::cout << std::hex << "0x" << PC << ": 0x" << opcode << "  -->  ";
 #endif
 
         OpcodeStatus status = Opcodes[opcode >> 12](opcode);
-#ifndef EMU_TEST
+#ifdef DEBUG_BUILD
         std::cout << std::endl;
 #endif
         if (status == OpcodeStatus::IncrementPC)
@@ -445,7 +445,7 @@ namespace chipotto
 
     OpcodeStatus Emulator::CLS()
     {
-#ifndef EMU_TEST
+#ifdef DEBUG_BUILD
         std::cout << "CLS";
 #endif
         uint8_t* pixels = nullptr;
@@ -462,7 +462,7 @@ namespace chipotto
     {
         if (SP > 0xF && SP < 0xFF)
             return OpcodeStatus::StackOverflow;
-#ifndef EMU_TEST
+#ifdef DEBUG_BUILD
         std::cout << "RET";
 #endif
         PC = Stack[SP & 0xF];
@@ -472,7 +472,7 @@ namespace chipotto
 
     OpcodeStatus Emulator::JP(uint16_t address)
     {
-#ifndef EMU_TEST
+#ifdef DEBUG_BUILD
         std::cout << "JP 0x" << address;
 #endif
         PC = address;
@@ -481,7 +481,7 @@ namespace chipotto
 
     OpcodeStatus Emulator::CALL(uint16_t address)
     {
-#ifndef EMU_TEST
+#ifdef DEBUG_BUILD
         std::cout << "CALL 0x" << (int)address;
 #endif
         if (SP > 0xF)
@@ -506,7 +506,7 @@ namespace chipotto
 
     OpcodeStatus Emulator::SE_VX_BYTE(uint8_t Vx, uint8_t byte)
     {
-#ifndef EMU_TEST
+#ifdef DEBUG_BUILD
         std::cout << "SE V" << (int)Vx << ", 0x" << (int)byte;
 #endif
         if (Registers[Vx] == byte)
@@ -516,7 +516,7 @@ namespace chipotto
 
     OpcodeStatus Emulator::SNE_VX_BYTE(uint8_t Vx, uint8_t byte)
     {
-#ifndef EMU_TEST
+#ifdef DEBUG_BUILD
         std::cout << "SNE V" << (int)Vx << ", 0x" << (int)byte;
 #endif
         if (Registers[Vx] != byte)
@@ -526,7 +526,7 @@ namespace chipotto
 
     OpcodeStatus Emulator::SE_VX_VY(uint8_t Vx, uint8_t Vy)
     {
-#ifndef EMU_TEST
+#ifdef DEBUG_BUILD
         std::cout << "SE V" << (int)Vx << ", V" << (int)Vy;
 #endif
         if (Registers[Vx] == Registers[Vy])
@@ -537,7 +537,7 @@ namespace chipotto
     OpcodeStatus Emulator::LD_VX_BYTE(uint8_t Vx, uint8_t byte)
     {
         Registers[Vx] = byte;
-#ifndef EMU_TEST
+#ifdef DEBUG_BUILD
         std::cout << "LD V" << (int)Vx << ", 0x" << (int)byte;
 #endif
         return OpcodeStatus::IncrementPC;
@@ -545,7 +545,7 @@ namespace chipotto
 
     OpcodeStatus Emulator::ADD_VX_BYTE(uint8_t Vx, uint8_t byte)
     {
-#ifndef EMU_TEST
+#ifdef DEBUG_BUILD
         std::cout << "ADD V" << (int)Vx << ", 0x" << (int)byte;
 #endif
         Registers[Vx] += byte;
@@ -555,7 +555,7 @@ namespace chipotto
     OpcodeStatus Emulator::LD_VX_VY(uint8_t Vx, uint8_t Vy)
     {
         Registers[Vx] = Registers[Vy];
-#ifndef EMU_TEST
+#ifdef DEBUG_BUILD
         std::cout << "LD V" << (int)Vx << ", V" << (int)Vy;
 #endif
         return OpcodeStatus::IncrementPC;
@@ -564,7 +564,7 @@ namespace chipotto
     OpcodeStatus Emulator::OR_VX_VY(uint8_t Vx, uint8_t Vy)
     {
         Registers[Vx] |= Registers[Vy];
-#ifndef EMU_TEST
+#ifdef DEBUG_BUILD
         std::cout << "OR V" << (int)Vx << ", V" << (int)Vy;
 #endif
         return OpcodeStatus::IncrementPC;
@@ -573,7 +573,7 @@ namespace chipotto
     OpcodeStatus Emulator::AND_VX_VY(uint8_t Vx, uint8_t Vy)
     {
         Registers[Vx] &= Registers[Vy];
-#ifndef EMU_TEST
+#ifdef DEBUG_BUILD
         std::cout << "AND V" << (int)Vx << ", V" << (int)Vy;
 #endif
         return OpcodeStatus::IncrementPC;
@@ -582,7 +582,7 @@ namespace chipotto
     OpcodeStatus Emulator::XOR_VX_VY(uint8_t Vx, uint8_t Vy)
     {
         Registers[Vx] ^= Registers[Vy];
-#ifndef EMU_TEST
+#ifdef DEBUG_BUILD
         std::cout << "XOR V" << (int)Vx << ", V" << (int)Vy;
 #endif
         return OpcodeStatus::IncrementPC;
@@ -596,7 +596,7 @@ namespace chipotto
         else
             Registers[0xF] = 0;
         Registers[Vx] += Registers[Vy];
-#ifndef EMU_TEST
+#ifdef DEBUG_BUILD
         std::cout << "ADD V" << (int)Vx << ", V" << (int)Vy;
 #endif
         return OpcodeStatus::IncrementPC;
@@ -609,7 +609,7 @@ namespace chipotto
         else
             Registers[0xF] = 0;
         Registers[Vx] -= Registers[Vy];
-#ifndef EMU_TEST
+#ifdef DEBUG_BUILD
         std::cout << "SUB V" << (int)Vx << ", V" << (int)Vy;
 #endif
         return OpcodeStatus::IncrementPC;
@@ -619,7 +619,7 @@ namespace chipotto
     {
         Registers[0xF] = Registers[Vx] & 0x1;
         Registers[Vx] >>= 1;
-#ifndef EMU_TEST
+#ifdef DEBUG_BUILD
         std::cout << "SHR V" << (int)Vx << "{, V" << (int)Vy << "}";
 #endif
         return OpcodeStatus::IncrementPC;
@@ -632,7 +632,7 @@ namespace chipotto
         else
             Registers[0xF] = 0;
         Registers[Vx] = Registers[Vy] - Registers[Vx];
-#ifndef EMU_TEST
+#ifdef DEBUG_BUILD
         std::cout << "SUBN V" << (int)Vx << ", V" << (int)Vy;
 #endif
         return OpcodeStatus::IncrementPC;
@@ -642,7 +642,7 @@ namespace chipotto
     {
         Registers[0xF] = Registers[Vx] >> 7;
         Registers[Vx] <<= 1;
-#ifndef EMU_TEST
+#ifdef DEBUG_BUILD
         std::cout << "SHL V" << (int)Vx << "{, V" << (int)Vy << "}";
 #endif
         return OpcodeStatus::IncrementPC;
@@ -654,7 +654,7 @@ namespace chipotto
         {
             PC += 2;
         }
-#ifndef EMU_TEST
+#ifdef DEBUG_BUILD
         std::cout << "SNE V" << (int)Vx << ", V" << (int)Vy;
 #endif
         return OpcodeStatus::IncrementPC;
@@ -662,7 +662,7 @@ namespace chipotto
 
     OpcodeStatus Emulator::LD_I_ADDR(uint16_t address)
     {
-#ifndef EMU_TEST
+#ifdef DEBUG_BUILD
         std::cout << "LD I, 0x" << (int)address;
 #endif
         I = address;
@@ -671,7 +671,7 @@ namespace chipotto
 
     OpcodeStatus Emulator::JP_V0_ADDR(uint16_t address)
     {
-#ifndef EMU_TEST
+#ifdef DEBUG_BUILD
         std::cout << "JP V0, 0x" << address;
 #endif
         PC = address + Registers[0x0];
@@ -680,7 +680,7 @@ namespace chipotto
 
     OpcodeStatus Emulator::RND_VX_BYTE(uint8_t Vx, uint8_t bytemask)
     {
-#ifndef EMU_TEST
+#ifdef DEBUG_BUILD
         std::cout << "RND V" << (int)Vx << ", 0x" << (int)bytemask;
 #endif
         Registers[Vx] = random_generator->GetRandomByte() & bytemask;
@@ -689,7 +689,7 @@ namespace chipotto
 
     OpcodeStatus Emulator::DRW_VX_VY_NIBBLE(uint8_t Vx, uint8_t Vy, uint8_t n_byte)
     {
-#ifndef EMU_TEST
+#ifdef DEBUG_BUILD
         std::cout << "DRW V" << (int)Vx << ", V" << (int)Vy << ", " << (int)n_byte;
 #endif
 
@@ -746,7 +746,7 @@ namespace chipotto
 
     OpcodeStatus Emulator::SKP_VX(uint8_t Vx)
     {
-#ifndef EMU_TEST
+#ifdef DEBUG_BUILD
         std::cout << "SKP V" << (int)Vx;
 #endif
         const uint8_t* keys_state = input_class->GetKeyboardState();
@@ -759,7 +759,7 @@ namespace chipotto
 
     OpcodeStatus Emulator::SKNP_VX(uint8_t Vx)
     {
-#ifndef EMU_TEST
+#ifdef DEBUG_BUILD
         std::cout << "SKNP V" << (int)Vx;
 #endif
         const uint8_t* keys_state = input_class->GetKeyboardState();
@@ -772,7 +772,7 @@ namespace chipotto
 
     OpcodeStatus Emulator::LD_VX_DT(uint8_t Vx)
     {
-#ifndef EMU_TEST
+#ifdef DEBUG_BUILD
         std::cout << "LD V" << (int)Vx << ", DT";
 #endif
         Registers[Vx] = DelayTimer;
@@ -781,7 +781,7 @@ namespace chipotto
 
     OpcodeStatus Emulator::LD_VX_K(uint8_t Vx)
     {
-#ifndef EMU_TEST
+#ifdef DEBUG_BUILD
         std::cout << "LD V" << (int)Vx << ", K";
 #endif
         WaitForKeyboardRegister_Index = Vx;
@@ -791,7 +791,7 @@ namespace chipotto
 
     OpcodeStatus Emulator::LD_DT_VX(uint8_t Vx)
     {
-#ifndef EMU_TEST
+#ifdef DEBUG_BUILD
         std::cout << "LD DT, V" << (int)Vx;
 #endif
         DelayTimer = Registers[Vx];
@@ -801,7 +801,7 @@ namespace chipotto
 
     OpcodeStatus Emulator::LD_ST_VX(uint8_t Vx)
     {
-#ifndef EMU_TEST
+#ifdef DEBUG_BUILD
         std::cout << "LD ST, V" << (int)Vx;
 #endif
         SoundTimer = Registers[Vx];
@@ -811,7 +811,7 @@ namespace chipotto
 
     OpcodeStatus Emulator::ADD_I_VX(uint8_t Vx)
     {
-#ifndef EMU_TEST
+#ifdef DEBUG_BUILD
         std::cout << "ADD I, V" << (int)Vx;
 #endif
         I += Registers[Vx];
@@ -820,7 +820,7 @@ namespace chipotto
 
     OpcodeStatus Emulator::LD_F_VX(uint8_t Vx)
     {
-#ifndef EMU_TEST
+#ifdef DEBUG_BUILD
         std::cout << "LD F, V" << (int)Vx;
 #endif
         I = 5 * Registers[Vx];
@@ -833,7 +833,7 @@ namespace chipotto
         MemoryMapping[I] = value / 100;
         MemoryMapping[I + 1] = (value - (MemoryMapping[I] * 100)) / 10; // ONE BUG WAS HERE
         MemoryMapping[I + 2] = value % 10;
-#ifndef EMU_TEST
+#ifdef DEBUG_BUILD
         std::cout << "LD B, V" << (int)Vx;
 #endif
         return OpcodeStatus::IncrementPC;
@@ -841,7 +841,7 @@ namespace chipotto
 
     OpcodeStatus Emulator::LD_I_VX(uint8_t Vx)
     {
-#ifndef EMU_TEST
+#ifdef DEBUG_BUILD
         std::cout << "LD [I], V" << (int)Vx;
 #endif
         for (uint8_t i = 0; i <= Vx; ++i)   // ONE BUG WAS HERE
@@ -853,7 +853,7 @@ namespace chipotto
 
     OpcodeStatus Emulator::LD_VX_I(uint8_t Vx)
     {
-#ifndef EMU_TEST
+#ifdef DEBUG_BUILD
         std::cout << "LD V" << (int)Vx << ", [I]";
 #endif
         for (uint8_t i = 0; i <= Vx; ++i)   //ONE BUG WAS HERE
