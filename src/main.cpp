@@ -13,27 +13,29 @@ int main(int argc, char** argv)
 
 	chipotto::Emulator emulator;
 
-	if (emulator.IsValid())
+	if (!emulator.IsValid())
 	{
-		chipotto::Gamefile* gamefile;
-		chipotto::Loader::ReadFromFile("resources\\TICTAC", &gamefile);
+		goto quit;	// escaping sequence
+	}
 
-		emulator.Load(gamefile);
+	chipotto::Gamefile* gamefile;
+	if (!chipotto::Loader::ReadFromFile("resources\\TICTAC", &gamefile))
+	{
+		goto quit;	// same
+	}
 
-		if (!gamefile->isValid())
+	emulator.Load(gamefile);
+
+	while (true)
+	{
+		if (!emulator.Tick())
 		{
-			delete gamefile;
-			goto quit;
-		}
-
-		while (true)
-		{
-			if (!emulator.Tick())
-			{
-				break;
-			}
+			break;
 		}
 	}
+
+cleanup:				// jump here if quitting with cleanup is needed
+		delete gamefile;
 
 quit:
 	SDL_Quit();

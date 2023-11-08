@@ -1,3 +1,6 @@
+#include <cstring>
+#include <iostream>
+
 #include "emulator.h"
 #include "sdl/emulator_random_generator.h"
 #include "sdl/keyboardstate_input_command.h"
