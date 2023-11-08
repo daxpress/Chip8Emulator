@@ -1,4 +1,6 @@
 #include "emulator.h"
+#include "sdl/emulator_random_generator.h"
+#include "sdl/keyboardstate_input_command.h"
 
 namespace chipotto
 {
@@ -762,16 +764,5 @@ namespace chipotto
         SDL_UnlockTexture(Texture);
         SDL_RenderCopy(Renderer, Texture, nullptr, nullptr);
         SDL_RenderPresent(Renderer);
-    }
-
-
-    const uint8_t *KeyboardStateInputCommand::GetKeyboardState()
-    {
-        return SDL_GetKeyboardState(nullptr);   //returns the actual keyboard state
-    }
-
-    uint8_t EmulatorRandomGenerator::GetRandomByte()
-    {
-        return (std::rand() % 256);
     }
 }

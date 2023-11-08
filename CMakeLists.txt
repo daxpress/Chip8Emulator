@@ -3,7 +3,12 @@ cmake_minimum_required(VERSION 3.8)
 # MAIN EXECUTABLE
 project(Chip8Emulator LANGUAGES CXX)
 
-set(PROJ_SRCS include/emulator.h src/emulator.cpp)
+set(PROJ_CPPS src/emulator.cpp)
+set(PROJ_HS include/emulator.h include/irandom_generator.h include/iinput_command.h)
+set(PROJ_HS_SDL include/sdl/keyboardstate_input_command.h)
+set(PROJ_CPPS_SDL src/sdl/emulator_random_generator.cpp src/sdl/keyboardstate_input_command.cpp)
+
+set(PROJ_SRCS ${PROJ_CPPS} ${PROJ_HS} ${PROJ_HS_SDL} ${PROJ_CPPS_SDL})
 
 add_executable(Chip8Emulator src/main.cpp ${PROJ_SRCS})
 

@@ -8,23 +8,14 @@
 #include <iostream>
 #include <functional>
 #include <unordered_map>
+
 #include "SDL.h"
+
+#include "irandom_generator.h"
+#include "iinput_command.h"
 
 namespace chipotto
 {
-	class IInputCommand
-	{
-		public:
-		virtual const uint8_t* GetKeyboardState() = 0;
-		virtual ~IInputCommand() = default;
-	};
-
-	class IRandomGenerator
-	{
-		public:
-		virtual uint8_t GetRandomByte() = 0;
-	};
-
 	enum class OpcodeStatus
 	{
 		IncrementPC,
@@ -95,25 +86,25 @@ namespace chipotto
 
 #ifdef EMU_TEST
 	public:
-	inline uint16_t GetPC() const {return PC;}
-	inline uint16_t GetI() const {return I;}
-	inline void SetI(const uint16_t new_i) {I = new_i;}
-	inline void SetSP(const uint8_t new_sp) {SP = new_sp;}
-	inline uint8_t GetSP() const {return SP;}
-	inline bool GetIsSuspended() const {return Suspended;}
-	inline int GetWidth() const {return width;}
-	inline int GetHeight() const {return height;}
-	inline uint8_t GetDelayTimer() const {return DelayTimer;}
-	inline uint8_t GetSoundTimer() const {return SoundTimer;}
-	inline SDL_Texture* GetTexture() const {return Texture;}
-	inline SDL_Renderer* GetRenderer() const {return Renderer;}
-	inline std::array<uint8_t, 0x1000>& GetMemoryMapping() {return MemoryMapping;}
-	inline std::array<uint8_t, 0x10>& GetRegisters() {return Registers;}
-	inline std::array<uint16_t, 0x10>& GetStack() {return Stack;}
-	inline IInputCommand* GetInputClass() {return input_class;}
-	inline void SetInputClass(IInputCommand* new_input_class) {input_class = new_input_class;}
-	inline IRandomGenerator* GetRandGenerator() {return random_generator;}
-	inline void SetRandomGenerator(IRandomGenerator* new_rand_gen) {random_generator = new_rand_gen;}
+		inline uint16_t GetPC() const {return PC;}
+		inline uint16_t GetI() const {return I;}
+		inline void SetI(const uint16_t new_i) {I = new_i;}
+		inline void SetSP(const uint8_t new_sp) {SP = new_sp;}
+		inline uint8_t GetSP() const {return SP;}
+		inline bool GetIsSuspended() const {return Suspended;}
+		inline int GetWidth() const {return width;}
+		inline int GetHeight() const {return height;}
+		inline uint8_t GetDelayTimer() const {return DelayTimer;}
+		inline uint8_t GetSoundTimer() const {return SoundTimer;}
+		inline SDL_Texture* GetTexture() const {return Texture;}
+		inline SDL_Renderer* GetRenderer() const {return Renderer;}
+		inline std::array<uint8_t, 0x1000>& GetMemoryMapping() {return MemoryMapping;}
+		inline std::array<uint8_t, 0x10>& GetRegisters() {return Registers;}
+		inline std::array<uint16_t, 0x10>& GetStack() {return Stack;}
+		inline IInputCommand* GetInputClass() {return input_class;}
+		inline void SetInputClass(IInputCommand* new_input_class) {input_class = new_input_class;}
+		inline IRandomGenerator* GetRandGenerator() {return random_generator;}
+		inline void SetRandomGenerator(IRandomGenerator* new_rand_gen) {random_generator = new_rand_gen;}
 
 #endif //EMU_TEST
 
@@ -149,18 +140,6 @@ namespace chipotto
 
 		IInputCommand* input_class = nullptr;
 		IRandomGenerator* random_generator = nullptr;
-	};
-
-	class KeyboardStateInputCommand : public IInputCommand
-	{
-		public:
-		virtual const uint8_t* GetKeyboardState() override;
-	};
-
-	class EmulatorRandomGenerator : public IRandomGenerator
-	{
-		public:
-		virtual uint8_t GetRandomByte() override;
 	};
 }
 
