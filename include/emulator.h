@@ -11,6 +11,7 @@
 
 #include "SDL.h"
 
+#include "gamefile.h"
 #include "irandom_generator.h"
 #include "iinput_command.h"
 
@@ -36,7 +37,7 @@ namespace chipotto
 		Emulator& operator=(const Emulator& other) = delete;
 		Emulator(Emulator&& other) = delete;
 
-		bool LoadFromFile(std::filesystem::path Path);
+		bool Load(const Gamefile* gamefile);
 
 		bool Tick();
 

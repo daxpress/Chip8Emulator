@@ -5,9 +5,10 @@ project(Chip8Emulator LANGUAGES CXX)
 
 
 set(PROJ_CPPS src/emulator.cpp)
-set(PROJ_HS include/emulator.h include/irandom_generator.h include/iinput_command.h)
-set(PROJ_HS_SDL include/sdl/keyboardstate_input_command.h)
-set(PROJ_CPPS_SDL src/sdl/emulator_random_generator.cpp src/sdl/keyboardstate_input_command.cpp)
+set(PROJ_HS include/emulator.h include/irandom_generator.h include/iinput_command.h include/gamefile.h)
+
+set(PROJ_HS_SDL include/sdl/emulator_random_generator.h include/sdl/keyboardstate_input_command.h include/sdl/loader.h)
+set(PROJ_CPPS_SDL src/sdl/emulator_random_generator.cpp src/sdl/keyboardstate_input_command.cpp src/sdl/loader.cpp)
 
 set(PROJ_SRCS ${PROJ_CPPS} ${PROJ_HS} ${PROJ_HS_SDL} ${PROJ_CPPS_SDL})
 

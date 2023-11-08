@@ -102,18 +102,11 @@ namespace chipotto
         }
     }
 
-    bool Emulator::LoadFromFile(std::filesystem::path Path)
+    bool Emulator::Load(const Gamefile* gamefile)
     {
-		std::ifstream file;
-        file.open(Path, std::ios::binary);
-        if (!file.is_open()) return false;
-
-        auto file_size = std::filesystem::file_size(Path);
-
-        file.read(reinterpret_cast<char*>(MemoryMapping.data() + PC), file_size);
-        file.close();
+        memcpy(MemoryMapping.data() + PC, gamefile->bytecode, gamefile->size);
         return true;
-	}
+    }
 
     bool Emulator::Tick()
     {

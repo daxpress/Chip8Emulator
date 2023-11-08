@@ -1,6 +1,7 @@
 #define SDL_MAIN_HANDLED
 #include <SDL.h>
 #include "emulator.h"
+#include "sdl/loader.h"
 
 int main(int argc, char** argv)
 {
@@ -14,7 +15,17 @@ int main(int argc, char** argv)
 
 	if (emulator.IsValid())
 	{
-		emulator.LoadFromFile("resources\\TICTAC");
+		chipotto::Gamefile* gamefile;
+		chipotto::Loader::ReadFromFile("resources\\TICTAC", &gamefile);
+
+		emulator.Load(gamefile);
+
+		if (!gamefile->isValid())
+		{
+			delete gamefile;
+			goto quit;
+		}
+
 		while (true)
 		{
 			if (!emulator.Tick())
@@ -24,6 +35,7 @@ int main(int argc, char** argv)
 		}
 	}
 
+quit:
 	SDL_Quit();
 	return 0;
 }
