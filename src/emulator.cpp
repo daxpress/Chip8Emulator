@@ -96,13 +96,13 @@ namespace chipotto
 		if (DelayTimer > 0 && tick >= DelayTimerTicks)
 		{
 			DelayTimer--;
-			DelayTimerTicks = 17 + SDL_GetTicks64();
+			DelayTimerTicks = SIXTYHERTZ_MS + SDL_GetTicks64();
 		}
 
 		if (SoundTimer > 0 && tick >= SoundTimerTicks)
 		{
-			DelayTimer--;
-			SoundTimerTicks = 17 + SDL_GetTicks64();
+			SoundTimer--;
+			SoundTimerTicks = SIXTYHERTZ_MS + SDL_GetTicks64();
 		}
 
 		while (input_class->IsInputPending())

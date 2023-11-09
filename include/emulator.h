@@ -9,7 +9,8 @@
 
 #include "gamefile.h"
 #include "irandom_generator.h"
-//#include "iinput_command.h"
+
+#define SIXTYHERTZ_MS 17
 
 namespace chipotto
 {
