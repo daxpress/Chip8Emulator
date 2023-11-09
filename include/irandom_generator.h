@@ -8,5 +8,6 @@ namespace chipotto
 	{
 	public:
 		virtual uint8_t GetRandomByte() = 0;
+		virtual ~IRandomGenerator() {};
 	};
 }

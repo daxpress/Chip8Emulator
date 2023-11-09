@@ -9,10 +9,11 @@
 
 #include "gamefile.h"
 #include "irandom_generator.h"
-#include "iinput_command.h"
+//#include "iinput_command.h"
 
 namespace chipotto
 {
+	class IInputCommand;
 	enum class OpcodeStatus
 	{
 		IncrementPC,
@@ -156,9 +157,6 @@ namespace chipotto
 		std::array<uint8_t, 0x10> Registers;
 		std::array<uint16_t, 0x10> Stack;
 		std::array<std::function<OpcodeStatus(const uint16_t)>, 0x10> Opcodes;
-
-		std::unordered_map<SDL_Keycode, uint8_t> KeyboardMap;
-		std::array<SDL_Scancode, 0x10> KeyboardValuesMap;
 
 		uint16_t I = 0x0;
 		uint8_t DelayTimer = 0x0;
