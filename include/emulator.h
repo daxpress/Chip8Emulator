@@ -166,7 +166,7 @@ namespace chipotto
 
 		bool Suspended = false;
 		uint8_t WaitForKeyboardRegister_Index = 0;
-		uint64_t DeltaTimerTicks = 0;
+		uint64_t DelayTimerTicks = 0;
 		uint64_t SoundTimerTicks = 0;
 
 		SDL_Window* Window = nullptr;

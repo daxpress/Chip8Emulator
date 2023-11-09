@@ -93,10 +93,10 @@ namespace chipotto
 	{
 		uint64_t tick = SDL_GetTicks64();
 
-		if (DelayTimer > 0 && tick >= DeltaTimerTicks)
+		if (DelayTimer > 0 && tick >= DelayTimerTicks)
 		{
 			DelayTimer--;
-			DeltaTimerTicks = 17 + SDL_GetTicks64();
+			DelayTimerTicks = 17 + SDL_GetTicks64();
 		}
 
 		if (SoundTimer > 0 && tick >= SoundTimerTicks)
@@ -104,27 +104,6 @@ namespace chipotto
 			DelayTimer--;
 			SoundTimerTicks = 17 + SDL_GetTicks64();
 		}
-
-		// input related, move out
-		//SDL_Event event;
-		//while (SDL_PollEvent(&event))
-		//{
-		//	if (event.type == SDL_KEYDOWN)
-		//	{
-		//		SDL_Keycode key = event.key.keysym.sym;
-		//		if (KeyboardMap.contains(key))
-		//		{
-		//			Registers[WaitForKeyboardRegister_Index] = KEY_AS_INT(input_class->GetKey());
-		//			Suspended = false;
-		//			PC += 2;
-		//		}
-		//	}
-		//	if (event.type == SDL_QUIT)
-		//	{
-		//		return false;
-		//	}
-		//}
-		//SDL_PumpEvents();
 
 		while (input_class->IsInputPending())
 		{
@@ -788,7 +767,7 @@ namespace chipotto
 		std::cout << "LD DT, V" << (int)Vx;
 #endif
 		DelayTimer = Registers[Vx];
-		DeltaTimerTicks = 17 + SDL_GetTicks64();
+		DelayTimerTicks = 17 + SDL_GetTicks64();
 		return OpcodeStatus::IncrementPC;
 	}
 
@@ -868,7 +847,7 @@ namespace chipotto
 
 		Suspended = false;
 		WaitForKeyboardRegister_Index = 0;
-		DeltaTimerTicks = 0;
+		DelayTimerTicks = 0;
 		SoundTimerTicks = 0;
 
 		memset(MemoryMapping.data(), 0, MemoryMapping.size() * sizeof(uint8_t));

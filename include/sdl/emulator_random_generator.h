@@ -7,6 +7,7 @@ namespace chipotto
 	class EmulatorRandomGenerator : public IRandomGenerator
 	{
 	public:
+		EmulatorRandomGenerator();
 		virtual uint8_t GetRandomByte() override;
 	};
 }
