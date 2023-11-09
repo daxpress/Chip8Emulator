@@ -42,7 +42,7 @@ enable_testing()
 
 project(Chip8Tests LANGUAGES CXX)
 
-set(TEST_SRCS tests/main.cpp tests/test_emulator.cpp) 
+set(TEST_SRCS tests/main.cpp tests/test_emulator.cpp tests/mocks.h) 
 
 add_executable(Chip8Tests ${PROJ_SRCS} ${TEST_SRCS})
 

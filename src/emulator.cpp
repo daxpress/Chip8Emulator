@@ -744,7 +744,6 @@ namespace chipotto
 #ifdef DEBUG_BUILD
 		std::cout << "SKP V" << (int)Vx;
 #endif
-		const uint8_t* keys_state = input_class->GetKeyboardState();
 		if (input_class->IsKeyPressed(INT_AS_KEY(Registers[Vx])))
 		{
 			PC += 2;
@@ -757,7 +756,6 @@ namespace chipotto
 #ifdef DEBUG_BUILD
 		std::cout << "SKNP V" << (int)Vx;
 #endif
-		const uint8_t* keys_state = input_class->GetKeyboardState();
 		if (!input_class->IsKeyPressed(INT_AS_KEY(Registers[Vx])))
 		{
 			PC += 2;

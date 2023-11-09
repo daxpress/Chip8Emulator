@@ -1,28 +1,9 @@
 #include "clove-unit.h"
 
 #include "emulator.h"
+#include "mocks.h"
 
 #define CLOVE_SUITE_NAME TestEmulator
-
-#pragma region MOCKS
-// class used to mock the keyboard state from SDL and be able to pass custom keyboard states
-class MockKeyboardStateInputCommand : public chipotto::IInputCommand
-{
-public:
-	virtual const uint8_t *GetKeyboardState() override{return fake_keyboard_state;}
-    ~MockKeyboardStateInputCommand(){if(fake_keyboard_state) delete fake_keyboard_state;}
-
-	uint8_t *fake_keyboard_state = nullptr;
-};
-
-class MockRandomGenerator : public chipotto::IRandomGenerator
-{
-public:
-    virtual uint8_t GetRandomByte() override { return 0xFF;}
-};
-
-#pragma endregion //MOCKS
-
 
 chipotto::Emulator* emulator = nullptr;
 
@@ -811,13 +792,9 @@ CLOVE_TEST(SKP_VX_PRESSED)
     uint16_t old_pc = emulator->GetPC();
 
     auto input_class = emulator->GetInputClass();
-    int num_keys;
-    SDL_GetKeyboardState(&num_keys);
     MockKeyboardStateInputCommand* mock_input = new MockKeyboardStateInputCommand();
-    mock_input->fake_keyboard_state = new uint8_t[num_keys];
+    mock_input->FakeIsKeyPressed = true;
     emulator->SetInputClass(mock_input);
-
-    mock_input->fake_keyboard_state[SDLK_4] = 1;
 
     emulator->OpcodeE(0xE19E);
 
@@ -836,25 +813,42 @@ CLOVE_TEST(SKP_VX_NOT_PRESSED)
 
     uint16_t old_pc = emulator->GetPC();
 
+    auto input_class = emulator->GetInputClass();
+    MockKeyboardStateInputCommand* mock_input = new MockKeyboardStateInputCommand();
+    mock_input->FakeIsKeyPressed = false;
+    emulator->SetInputClass(mock_input);
+
     emulator->OpcodeE(0xE19E);
 
     uint16_t new_pc = emulator->GetPC();
 
     CLOVE_UINT_EQ(old_pc, new_pc);
+
+    emulator->SetInputClass(input_class);
+    delete mock_input;
 }
 
 CLOVE_TEST(SKNP_VX_PRESSED)
 {
     auto& registers = emulator->GetRegisters();
-    registers[0x1] = 0xC;
+    uint8_t expected_key = 0xC;
+    registers[0x1] = expected_key;
 
     uint16_t old_pc = emulator->GetPC();
 
-    emulator->OpcodeE(0xE19E);
+    auto input_class = emulator->GetInputClass();
+    MockKeyboardStateInputCommand* mock_input = new MockKeyboardStateInputCommand();
+    mock_input->FakeIsKeyPressed = true;
+    emulator->SetInputClass(mock_input);
+
+    emulator->OpcodeE(0xE1A1);
 
     uint16_t new_pc = emulator->GetPC();
 
     CLOVE_UINT_EQ(old_pc, new_pc);
+
+    emulator->SetInputClass(input_class);
+    delete mock_input;
 }
 
 CLOVE_TEST(SKNP_VX_NOT_PRESSED)
@@ -866,15 +860,11 @@ CLOVE_TEST(SKNP_VX_NOT_PRESSED)
     uint16_t old_pc = emulator->GetPC();
 
     auto input_class = emulator->GetInputClass();
-    int num_keys;
-    SDL_GetKeyboardState(&num_keys);
     MockKeyboardStateInputCommand* mock_input = new MockKeyboardStateInputCommand();
-    mock_input->fake_keyboard_state = new uint8_t[num_keys];
+    mock_input->FakeIsKeyPressed = false;
     emulator->SetInputClass(mock_input);
 
-    mock_input->fake_keyboard_state[SDLK_4] = 1;
-
-    emulator->OpcodeE(0xE19E);
+    emulator->OpcodeE(0xE1A1);
 
     uint16_t new_pc = emulator->GetPC();
 
