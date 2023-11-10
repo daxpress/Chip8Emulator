@@ -1,8 +1,21 @@
 cmake_minimum_required(VERSION 3.8)
 
-# MAIN EXECUTABLE
 project(Chip8Emulator LANGUAGES CXX)
 
+# Download automatically, you can also just copy the conan.cmake file
+if(NOT EXISTS "${CMAKE_BINARY_DIR}/conan.cmake")
+   message(STATUS "Downloading conan.cmake from https://raw.githubusercontent.com/conan-io/cmake-conan")
+   file(DOWNLOAD "https://raw.githubusercontent.com/conan-io/cmake-conan/0.18.1/conan.cmake"
+                 "${CMAKE_BINARY_DIR}/conan.cmake" 
+                 TLS_VERIFY ON)
+endif()
+include(${CMAKE_BINARY_DIR}/conan.cmake)
+
+conan_cmake_run(CONANFILE conanfile.txt
+                BASIC_SETUP CMAKE_TARGETS
+                BUILD missing)
+
+# MAIN EXECUTABLE
 
 set(PROJ_CPPS src/emulator.cpp)
 set(PROJ_HS include/emulator.h include/irandom_generator.h include/iinput_command.h include/gamefile.h
@@ -18,17 +31,15 @@ target_compile_definitions(Chip8Emulator PRIVATE $<$<CONFIG:Debug>:DEBUG_BUILD>)
 
 set_property(TARGET Chip8Emulator PROPERTY CXX_STANDARD 20)
 
-target_include_directories(Chip8Emulator PUBLIC src include SDL2/include)
+target_include_directories(Chip8Emulator PUBLIC src include)
 
-target_link_libraries(Chip8Emulator ${PROJECT_SOURCE_DIR}/SDL2/lib/x64/SDL2.lib)
-
-
-set(SDL2_LIB_DIR ${PROJECT_SOURCE_DIR}/SDL2/lib/x64)
-
-add_custom_command(
-    TARGET Chip8Emulator POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy ${SDL2_LIB_DIR}/SDL2.dll $<TARGET_FILE_DIR:Chip8Emulator>
-)
+find_package(SDL2 CONFIG REQUIRED)
+if(TARGET SDL2::SDL2)
+	target_link_libraries(Chip8Emulator SDL2::SDL2)
+	message(STATUS "SDL2 successfully linked")
+else()
+	message(WARNING "SDL2 not found")
+endif()
 
 set (RESOURCES_DIR ${PROJECT_SOURCE_DIR}/resources)
 add_custom_command(
@@ -51,9 +62,15 @@ target_compile_definitions(Chip8Tests PUBLIC EMU_TEST)
 
 set_property(TARGET Chip8Tests PROPERTY CXX_STANDARD 20)
 
-target_include_directories(Chip8Tests PUBLIC include SDL2/include src)
+target_include_directories(Chip8Tests PUBLIC include src tests)
 
-target_link_libraries(Chip8Tests ${PROJECT_SOURCE_DIR}/SDL2/lib/x64/SDL2.lib)
+if(TARGET SDL2::SDL2)
+	target_link_libraries(Chip8Tests SDL2::SDL2)
+	message(STATUS "SDL2 successfully linked")
+else()
+	message(WARNING "SDL2 not found")
+endif()
+
 
 add_test(NAME Chip8Tests COMMAND Chip8Tests -x)
 

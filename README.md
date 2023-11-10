@@ -1,10 +1,14 @@
 # Chip8 Emulator [![build](https://github.com/DC20-dev/Chip8Emulator/actions/workflows/build.yml/badge.svg)](https://github.com/DC20-dev/Chip8Emulator/actions/workflows/build.yml)
 
-A fully featured Chip8 Emulator written in C++  for fun!
+A Chip8 Emulator written in C++  for fun!
+
+## Requirements
+
+* [`CMake`](https://cmake.org) version 3.8 or higher to build the app
+
+* [`Conan`](https://conan.io/) package manager to fetch and include the dependancies
 
 ## Build Instructions
-
-You will need `CMake` version 3.8 or higher.
 
 * Clone the repository in a directory on your machine
 
@@ -47,6 +51,6 @@ Full test coverage is not yet present, but all the current tests are passing so 
 
 ## ThirdParty
 
-* The app uses [`SDL2`](https://github.com/libsdl-org/SDL) library to render the game, it is already included in the repo to make your experience as seamless as possible
+* The app uses [`SDL2`](https://github.com/libsdl-org/SDL) library to render the game, which is fetched automatically by `Conan`
 
 * The tests are implemented using [`CLove-Unit`](https://github.com/fdefelici/clove-unit) header-only library, which is already included into the repository

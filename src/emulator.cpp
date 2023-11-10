@@ -91,21 +91,6 @@ namespace chipotto
 
 	bool Emulator::Tick(const float deltatime)
 	{
-//		uint64_t tick = SDL_GetTicks64();
-//#define SIXTYHERTZ_MS
-//		if (DelayTimer > 0 && tick >= DelayTimerDeltaTicks)
-//		{
-//			DelayTimer--;
-//			DelayTimerDeltaTicks = SIXTYHERTZ_MS + SDL_GetTicks64();
-//		}
-//
-//		if (SoundTimer > 0 && tick >= SoundTimerDeltaTicks)
-//		{
-//			SoundTimer--;
-//			SoundTimerDeltaTicks = SIXTYHERTZ_MS + SDL_GetTicks64();
-//		}
-//#undef SIXTYHERTZ_MS
-
 		DelayTimerDeltaTicks -= deltatime;
 		SoundTimerDeltaTicks -= deltatime;
 
@@ -128,7 +113,7 @@ namespace chipotto
 			switch (InputType)
 			{
 			case chipotto::InputType::KEYDOWN:
-				Registers[WaitForKeyboardRegister_Index] = KEY_AS_INT(input_class->GetKey());
+				Registers[WaitForKeyboardRegister_Index] = input_class->GetKey();
 				Suspended = false;
 				PC += 2;
 				break;
