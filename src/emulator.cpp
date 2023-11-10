@@ -89,20 +89,36 @@ namespace chipotto
 		return true;
 	}
 
-	bool Emulator::Tick()
+	bool Emulator::Tick(const float deltatime)
 	{
-		uint64_t tick = SDL_GetTicks64();
+//		uint64_t tick = SDL_GetTicks64();
+//#define SIXTYHERTZ_MS
+//		if (DelayTimer > 0 && tick >= DelayTimerDeltaTicks)
+//		{
+//			DelayTimer--;
+//			DelayTimerDeltaTicks = SIXTYHERTZ_MS + SDL_GetTicks64();
+//		}
+//
+//		if (SoundTimer > 0 && tick >= SoundTimerDeltaTicks)
+//		{
+//			SoundTimer--;
+//			SoundTimerDeltaTicks = SIXTYHERTZ_MS + SDL_GetTicks64();
+//		}
+//#undef SIXTYHERTZ_MS
 
-		if (DelayTimer > 0 && tick >= DelayTimerTicks)
+		DelayTimerDeltaTicks -= deltatime;
+		SoundTimerDeltaTicks -= deltatime;
+
+		if (DelayTimer > 0 && DelayTimerDeltaTicks <= 0)
 		{
 			DelayTimer--;
-			DelayTimerTicks = SIXTYHERTZ_MS + SDL_GetTicks64();
+			DelayTimerDeltaTicks = SIXTYHERTZ_S;
 		}
 
-		if (SoundTimer > 0 && tick >= SoundTimerTicks)
+		if (SoundTimer > 0 && SoundTimerDeltaTicks <= 0)
 		{
 			SoundTimer--;
-			SoundTimerTicks = SIXTYHERTZ_MS + SDL_GetTicks64();
+			SoundTimerDeltaTicks = SIXTYHERTZ_S;
 		}
 
 		while (input_class->IsInputPending())
@@ -767,7 +783,7 @@ namespace chipotto
 		std::cout << "LD DT, V" << (int)Vx;
 #endif
 		DelayTimer = Registers[Vx];
-		DelayTimerTicks = 17 + SDL_GetTicks64();
+		DelayTimerDeltaTicks = SIXTYHERTZ_S;
 		return OpcodeStatus::IncrementPC;
 	}
 
@@ -777,7 +793,7 @@ namespace chipotto
 		std::cout << "LD ST, V" << (int)Vx;
 #endif
 		SoundTimer = Registers[Vx];
-		SoundTimerTicks = 17 + SDL_GetTicks64();
+		SoundTimerDeltaTicks = SIXTYHERTZ_S;
 		return OpcodeStatus::IncrementPC;
 	}
 
@@ -847,8 +863,8 @@ namespace chipotto
 
 		Suspended = false;
 		WaitForKeyboardRegister_Index = 0;
-		DelayTimerTicks = 0;
-		SoundTimerTicks = 0;
+		DelayTimerDeltaTicks = 0;
+		SoundTimerDeltaTicks = 0;
 
 		memset(MemoryMapping.data(), 0, MemoryMapping.size() * sizeof(uint8_t));
 		memset(Registers.data(), 0, Registers.size() * sizeof(uint8_t));

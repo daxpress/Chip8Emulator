@@ -10,6 +10,7 @@ int main(int argc, char** argv)
 		SDL_Log("Unable to initialize SDL: %s", SDL_GetError());
 		return -1;
 	}
+	float last_tick = SDL_GetTicks64();
 
 	chipotto::Emulator emulator;
 
@@ -26,9 +27,14 @@ int main(int argc, char** argv)
 
 	emulator.Load(gamefile);
 
+
 	while (true)
 	{
-		if (!emulator.Tick())
+		float deltatime = last_tick - SDL_GetTicks64();
+		deltatime *= 0.001f;
+		last_tick = deltatime;
+
+		if (!emulator.Tick(deltatime))
 		{
 			break;
 		}

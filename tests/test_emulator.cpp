@@ -895,7 +895,7 @@ CLOVE_TEST(LD_VX_K)
     event.type = SDL_KEYDOWN;
     event.key.keysym.sym = SDLK_4;
     SDL_PushEvent(&event);
-    emulator->Tick();
+    emulator->Tick(SIXTYHERTZ_S);
 
     CLOVE_INT_EQ(0xC, registers[0x4]);
 }

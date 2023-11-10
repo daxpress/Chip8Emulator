@@ -10,7 +10,7 @@
 #include "gamefile.h"
 #include "irandom_generator.h"
 
-#define SIXTYHERTZ_MS 17
+#define SIXTYHERTZ_S 0.017
 
 namespace chipotto
 {
@@ -37,7 +37,7 @@ namespace chipotto
 
 		bool Load(const Gamefile* gamefile);
 
-		bool Tick();
+		bool Tick(const float deltatime);
 
 		inline bool IsValid() const
 		{
@@ -167,8 +167,8 @@ namespace chipotto
 
 		bool Suspended = false;
 		uint8_t WaitForKeyboardRegister_Index = 0;
-		uint64_t DelayTimerTicks = 0;
-		uint64_t SoundTimerTicks = 0;
+		uint64_t DelayTimerDeltaTicks = 0;
+		uint64_t SoundTimerDeltaTicks = 0;
 
 		SDL_Window* Window = nullptr;
 		SDL_Renderer* Renderer = nullptr;
