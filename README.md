@@ -6,7 +6,7 @@ A Chip8 Emulator written in C++  for fun!
 
 * [`CMake`](https://cmake.org) version 3.8 or higher to build the app
 
-* [`Conan`](https://conan.io/) package manager to fetch and include the dependancies
+* [`Conan`](https://conan.io/) package manager (tested on version 1.59) to fetch and include the dependancies
 
 ## Build Instructions
 
