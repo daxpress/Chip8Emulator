@@ -13,7 +13,6 @@ include(${CMAKE_BINARY_DIR}/conan.cmake)
 
 conan_cmake_run(CONANFILE conanfile.txt
                 BASIC_SETUP CMAKE_TARGETS
-                PROFILE_AUTO build_type
                 BUILD missing)
 
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_BINARY_DIR})
