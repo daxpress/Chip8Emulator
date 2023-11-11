@@ -12,11 +12,25 @@ A Chip8 Emulator written in C++  for fun!
 
 * Clone the repository in a directory on your machine
 
+<details>
+
+<summary>Using CMake</summary>
+
 * Run ```conan install . --profile={your preferred conan profile}```
 
 * Run `CMake` build system generation by either using editor features or by running ```cmake -B"./build"```
 
 * Build the executable using the editor features or by running ```cmake --build "./build"```
+
+</details>
+
+<details>
+
+<summary>Using Conan</summary>
+
+* Run ```conan build . -pr={your preferred conan profile}```
+
+</details>
 
 ## Usage
 
@@ -43,7 +57,8 @@ The key bindings are the following:
 | C | B |
 | V | F |
 
-**NOTE:** There is currently no loading solution for your own ROMs as this project is intended for demonstration only, but it will be implemented soon enough;
+> [!NOTE]
+> There is currently no loading solution for your own ROMs as this project is intended for demonstration only, but it will be implemented soon enough;
 in the meantime You can bring your TicTacToe skills to the next level :wink:
 
 ## Tests [![tests](https://github.com/DC20-dev/Chip8Emulator/actions/workflows/tests.yml/badge.svg)](https://github.com/DC20-dev/Chip8Emulator/actions/workflows/tests.yml)
