@@ -23,12 +23,6 @@ jobs:
     - name: Detect Profile
       run: conan profile detect
 
-    - name: Install To Project
-      run: conan install . 
-      
-    - name: Detect Profile
-      run: conan profile detect
-
     - name: Build Project
       run: conan build .
 
