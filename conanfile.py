@@ -11,8 +11,3 @@ class Chip8EmulatorRecipe(ConanFile):
 
     def layout(self):
         cmake_layout(self)
-
-    def build(self):
-        cmake = CMake(self)
-        cmake.configure()
-        cmake.build()
