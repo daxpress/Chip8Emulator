@@ -6,10 +6,12 @@ project(Chip8Emulator LANGUAGES CXX)
 
 set(PROJ_CPPS src/emulator.cpp)
 set(PROJ_HS include/emulator.h include/irandom_generator.h include/iinput_command.h include/gamefile.h
-include/keys.h include/input_type.h)
+include/keys.h include/input_type.h include/renderer.h)
 
-set(PROJ_HS_SDL include/sdl/emulator_random_generator.h include/sdl/sdl_input.h include/sdl/loader.h)
-set(PROJ_CPPS_SDL src/sdl/emulator_random_generator.cpp src/sdl/sdl_input.cpp src/sdl/loader.cpp)
+set(PROJ_HS_SDL include/sdl/emulator_random_generator.h include/sdl/sdl_input.h include/sdl/loader.h
+include/sdl/sdl_emu_renderer.h)
+set(PROJ_CPPS_SDL src/sdl/emulator_random_generator.cpp src/sdl/sdl_input.cpp src/sdl/loader.cpp
+src/sdl/sdl_emu_renderer.cpp)
 
 set(PROJ_SRCS ${PROJ_CPPS} ${PROJ_HS} ${PROJ_HS_SDL} ${PROJ_CPPS_SDL})
 

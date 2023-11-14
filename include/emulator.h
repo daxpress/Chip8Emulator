@@ -5,8 +5,7 @@
 #include <functional>
 #include <unordered_map>
 
-#include "SDL.h"
-
+#include "renderer.h"
 #include "gamefile.h"
 #include "irandom_generator.h"
 
@@ -39,12 +38,7 @@ namespace chipotto
 
 		bool Tick(const float deltatime);
 
-		inline bool IsValid() const
-		{
-			if (!Window || !Renderer || !Texture)
-				return false;
-			return true;
-		}
+		inline bool IsValid() { return renderer->IsValid(); };
 
 #pragma region Opcode Categories
 
@@ -138,8 +132,7 @@ namespace chipotto
 		inline int GetHeight() const {return height;}
 		inline uint8_t GetDelayTimer() const {return DelayTimer;}
 		inline uint8_t GetSoundTimer() const {return SoundTimer;}
-		inline SDL_Texture* GetTexture() const {return Texture;}
-		inline SDL_Renderer* GetRenderer() const {return Renderer;}
+		inline EmuRenderer* GetRenderer() const {return renderer;}
 		inline std::array<uint8_t, 0x1000>& GetMemoryMapping() {return MemoryMapping;}
 		inline std::array<uint8_t, 0x10>& GetRegisters() {return Registers;}
 		inline std::array<uint16_t, 0x10>& GetStack() {return Stack;}
@@ -170,13 +163,11 @@ namespace chipotto
 		uint64_t DelayTimerDeltaTicks = 0;
 		uint64_t SoundTimerDeltaTicks = 0;
 
-		SDL_Window* Window = nullptr;
-		SDL_Renderer* Renderer = nullptr;
-		SDL_Texture* Texture = nullptr;
 		int width = 64;
 		int height = 32;
 		bool DoWrap = false;
 
+		EmuRenderer* renderer = nullptr;
 		IInputCommand* input_class = nullptr;
 		IRandomGenerator* random_generator = nullptr;
 	};

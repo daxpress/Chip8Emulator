@@ -16,13 +16,13 @@ int main(int argc, char** argv)
 
 	if (!emulator.IsValid())
 	{
-		goto quit;	// escaping sequence
+		goto quit_on_error;	// escaping sequence
 	}
 
 	chipotto::Gamefile* gamefile;
 	if (!chipotto::Loader::ReadFromFile("resources\\TICTAC", &gamefile))
 	{
-		goto quit;	// same
+		goto quit_on_error;	// same
 	}
 
 	emulator.Load(gamefile);
@@ -46,4 +46,8 @@ cleanup:				// jump here if quitting with cleanup is needed
 quit:
 	SDL_Quit();
 	return 0;
+
+quit_on_error:
+	SDL_Quit();
+	return -1;
 }

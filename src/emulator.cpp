@@ -5,6 +5,7 @@
 #include "sdl/emulator_random_generator.h"
 #include "sdl/sdl_input.h"
 #include "input_type.h"
+#include "sdl/sdl_emu_renderer.h"
 
 namespace chipotto
 {
@@ -32,46 +33,16 @@ namespace chipotto
 
 		SetFonts();
 
-
-		Window = SDL_CreateWindow("Chip-8", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, width * 10, height * 10, 0);
-		if (!Window)
-		{
-			SDL_Log("Unable to create window: %s", SDL_GetError());
-			return;
-		}
-		Renderer = SDL_CreateRenderer(Window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
-		if (!Renderer)
-		{
-			SDL_Log("Unable to create renderer: %s", SDL_GetError());
-			SDL_DestroyWindow(Window);
-			return;
-		}
-		Texture = SDL_CreateTexture(Renderer, SDL_PIXELFORMAT_RGBA32, SDL_TEXTUREACCESS_STREAMING, width, height);
-		if (!Texture)
-		{
-			SDL_Log("Unable to create texture: %s", SDL_GetError());
-			SDL_DestroyRenderer(Renderer);
-			SDL_DestroyWindow(Window);
-			return;
-		}
-
+		renderer = new SDLEmuRenderer(64, 32);
 		input_class = new SDLInput();
 		random_generator = new EmulatorRandomGenerator();
 	}
 
 	Emulator::~Emulator()
 	{
-		if (Texture)
+		if (renderer)
 		{
-			SDL_DestroyTexture(Texture);
-		}
-		if (Renderer)
-		{
-			SDL_DestroyRenderer(Renderer);
-		}
-		if (Window)
-		{
-			SDL_DestroyWindow(Window);
+			delete renderer;
 		}
 		if (input_class)
 		{
@@ -423,13 +394,7 @@ namespace chipotto
 #ifdef DEBUG_BUILD
 		std::cout << "CLS";
 #endif
-		uint8_t* pixels = nullptr;
-		int pitch;
-		int result = SDL_LockTexture(Texture, nullptr, reinterpret_cast<void**>(&pixels), &pitch);
-		memset(pixels, 0, pitch * height);
-		SDL_UnlockTexture(Texture);
-		SDL_RenderCopy(Renderer, Texture, nullptr, nullptr);
-		SDL_RenderPresent(Renderer);
+		renderer->ClearScreen();
 		return OpcodeStatus::IncrementPC;
 	}
 
@@ -670,51 +635,23 @@ namespace chipotto
 
 		uint8_t x_coord = Registers[Vx] % width;
 		uint8_t y_coord = Registers[Vy] % height;
+		bool out_collision = false;
 
-		uint8_t* pixels = nullptr;
-		int pitch;
-		int result = SDL_LockTexture(Texture, nullptr, reinterpret_cast<void**>(&pixels), &pitch);
+		// Prepare sprite
+		const uint8_t* sprite = &MemoryMapping[I];
+
+		int result = renderer->Draw(x_coord, y_coord,
+			sprite, n_byte,
+			DoWrap, out_collision);
+
 		if (result != 0)
 		{
-			SDL_Log("Failed to lock texture");
 			return OpcodeStatus::Error;
 		}
-
-		for (int y = 0; y < n_byte; ++y)
+		if (out_collision)
 		{
-			if (!DoWrap && y + y_coord >= height)
-				break;
-			uint8_t row_byte = MemoryMapping[I + y];
-			for (int x = 0; x < 8; x++)
-			{
-				uint8_t pixel_color = (row_byte >> (7 - x)) & 0x1;
-				uint8_t color = 0;
-				if (pixel_color)
-				{
-					color = 0xFF;
-				}
-				if (!DoWrap && x + x_coord >= width)
-					break;
-				int pixel_index = ((x + x_coord) % width) * 4 + pitch * ((y + y_coord) % height);
-				uint8_t existing_pixel = pixels[pixel_index];
-				color ^= existing_pixel;
-
-				if (existing_pixel != 0 && color != 0)
-				{
-					Registers[0xF] = 0x1;
-				}
-
-				pixels[pixel_index + 0] = color;
-				pixels[pixel_index + 1] = color;
-				pixels[pixel_index + 2] = color;
-				pixels[pixel_index + 3] = color;
-			}
+			Registers[0xF] = 0x1;
 		}
-
-		SDL_UnlockTexture(Texture);
-
-		SDL_RenderCopy(Renderer, Texture, nullptr, nullptr);
-		SDL_RenderPresent(Renderer);
 
 		return OpcodeStatus::IncrementPC;
 	}
@@ -857,12 +794,6 @@ namespace chipotto
 
 		SetFonts();
 
-		uint8_t* pixels = nullptr;
-		int pitch;
-		int result = SDL_LockTexture(Texture, nullptr, reinterpret_cast<void**>(&pixels), &pitch);
-		memset(pixels, 0, pitch * height);
-		SDL_UnlockTexture(Texture);
-		SDL_RenderCopy(Renderer, Texture, nullptr, nullptr);
-		SDL_RenderPresent(Renderer);
+		renderer->ClearScreen();
 	}
 }
