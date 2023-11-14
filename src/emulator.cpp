@@ -9,7 +9,8 @@
 
 namespace chipotto
 {
-	Emulator::Emulator()
+	Emulator::Emulator(EmuRenderer* renderer, IInputCommand* input, IRandomGenerator* random_generator)
+		: renderer(renderer), input_class(input), random_generator(random_generator)
 	{
 #pragma region OPCODE_BINDINGS
 
@@ -32,26 +33,10 @@ namespace chipotto
 #pragma endregion //OPCODE_BINDINGS
 
 		SetFonts();
-
-		renderer = new SDLEmuRenderer(64, 32);
-		input_class = new SDLInput();
-		random_generator = new EmulatorRandomGenerator();
 	}
 
 	Emulator::~Emulator()
 	{
-		if (renderer)
-		{
-			delete renderer;
-		}
-		if (input_class)
-		{
-			delete input_class;
-		}
-		if (random_generator)
-		{
-			delete random_generator;
-		}
 	}
 
 	bool Emulator::Load(const Gamefile* gamefile)

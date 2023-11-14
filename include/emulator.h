@@ -5,15 +5,17 @@
 #include <functional>
 #include <unordered_map>
 
-#include "renderer.h"
 #include "gamefile.h"
-#include "irandom_generator.h"
+
 
 #define SIXTYHERTZ_S 0.017
 
 namespace chipotto
 {
 	class IInputCommand;
+	class EmuRenderer;
+	class IRandomGenerator;
+
 	enum class OpcodeStatus
 	{
 		IncrementPC,
@@ -27,7 +29,8 @@ namespace chipotto
 	 class Emulator
 	{
 	public:
-		Emulator();
+		Emulator() = delete;
+		Emulator(EmuRenderer* renderer, IInputCommand* input, IRandomGenerator* random_generator);
 		~Emulator();
 
 		Emulator(const Emulator& other) = delete;
@@ -37,8 +40,6 @@ namespace chipotto
 		bool Load(const Gamefile* gamefile);
 
 		bool Tick(const float deltatime);
-
-		inline bool IsValid() { return renderer->IsValid(); };
 
 #pragma region Opcode Categories
 

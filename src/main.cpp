@@ -2,6 +2,9 @@
 #include <SDL.h>
 #include "emulator.h"
 #include "sdl/loader.h"
+#include "sdl/sdl_emu_renderer.h"
+#include "sdl/sdl_input.h"
+#include "sdl/emulator_random_generator.h"
 
 int main(int argc, char** argv)
 {
@@ -12,17 +15,23 @@ int main(int argc, char** argv)
 	}
 	float last_tick = SDL_GetTicks64();
 
-	chipotto::Emulator emulator;
+	chipotto::SDLEmuRenderer renderer = chipotto::SDLEmuRenderer(64, 32);
 
-	if (!emulator.IsValid())
+	if (!renderer.IsValid())
 	{
-		goto quit_on_error;	// escaping sequence
+		SDL_Quit();
+		return -1;
 	}
+
+	chipotto::SDLInput input_class = chipotto::SDLInput();
+	chipotto::EmulatorRandomGenerator random_generator = chipotto::EmulatorRandomGenerator();
+
+	chipotto::Emulator emulator(&renderer, &input_class, &random_generator);
 
 	chipotto::Gamefile* gamefile;
 	if (!chipotto::Loader::ReadFromFile("resources\\TICTAC", &gamefile))
 	{
-		goto quit_on_error;	// same
+		goto quit_on_error;	// panicking
 	}
 
 	emulator.Load(gamefile);
