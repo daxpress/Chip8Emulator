@@ -133,10 +133,11 @@ namespace chipotto
 		inline int GetHeight() const {return height;}
 		inline uint8_t GetDelayTimer() const {return DelayTimer;}
 		inline uint8_t GetSoundTimer() const {return SoundTimer;}
-		inline EmuRenderer* GetRenderer() const {return renderer;}
 		inline std::array<uint8_t, 0x1000>& GetMemoryMapping() {return MemoryMapping;}
 		inline std::array<uint8_t, 0x10>& GetRegisters() {return Registers;}
 		inline std::array<uint16_t, 0x10>& GetStack() {return Stack;}
+		inline EmuRenderer* GetRenderer() const { return renderer; }
+		inline void SetRenderer(EmuRenderer* new_renderer) { renderer = new_renderer; }
 		inline IInputCommand* GetInputClass() {return input_class;}
 		inline void SetInputClass(IInputCommand* new_input_class) {input_class = new_input_class;}
 		inline IRandomGenerator* GetRandGenerator() {return random_generator;}
