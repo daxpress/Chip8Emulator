@@ -6,6 +6,8 @@
 #include "sdl/sdl_input.h"
 #include "sdl/emulator_random_generator.h"
 
+#include <iostream>
+
 int main(int argc, char** argv)
 {
 	if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO) != 0)
@@ -39,9 +41,9 @@ int main(int argc, char** argv)
 
 	while (true)
 	{
-		float deltatime = last_tick - SDL_GetTicks64();
+		float deltatime = SDL_GetTicks64() - last_tick;
 		deltatime *= 0.001f;
-		last_tick = deltatime;
+		last_tick = SDL_GetTicks64();
 
 		if (!emulator.Tick(deltatime))
 		{
