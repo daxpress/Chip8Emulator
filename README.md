@@ -70,4 +70,4 @@ Full test coverage is not yet present, but all the current tests are passing so 
 
 * The app uses [`SDL2`](https://github.com/libsdl-org/SDL) library to render the game, which is fetched automatically by `Conan`
 
-* The tests are implemented using [`CLove-Unit`](https://github.com/fdefelici/clove-unit) header-only library, which is already included into the repository
+* The tests are implemented using [`CLove-Unit`](https://github.com/fdefelici/clove-unit) header-only library, which is already included into the repository by `Conan`

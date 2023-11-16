@@ -5,9 +5,7 @@ class Chip8EmulatorRecipe(ConanFile):
     settings = "os", "compiler", "build_type", "arch"
     generators = "CMakeToolchain", "CMakeDeps"
     build_policy = "missing"
-
-    def requirements(self):
-        self.requires("sdl/2.28.5")
+    requires = "sdl/2.28.5", "clove-unit/2.4.1"
 
     def layout(self):
         cmake_layout(self)

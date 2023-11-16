@@ -42,7 +42,7 @@ enable_testing()
 
 project(Chip8Tests LANGUAGES CXX)
 
-set(TEST_SRCS tests/main.cpp tests/test_emulator.cpp tests/mocks.h) 
+set(TEST_SRCS tests/main.cpp tests/test_emulator.cpp) 
 
 add_executable(Chip8Tests ${PROJ_SRCS} ${TEST_SRCS})
 
@@ -60,6 +60,12 @@ else()
 	message(WARNING "SDL2 not found")
 endif()
 
+find_package(clove-unit REQUIRED)
+if(TARGET clove-unit::clove-unit)
+	target_link_libraries(Chip8Tests clove-unit::clove-unit)
+	message(STATUS "clove unit successfully linked")
+else()
+	message(WARNING "clove unit not found")
+endif()
 
 add_test(NAME Chip8Tests COMMAND Chip8Tests -x)
-
