@@ -1,15 +1,24 @@
 #include "clove-unit.h"
 
 #include "emulator.h"
+#include "sdl/sdl_emu_renderer.h"
+#include "sdl/sdl_input.h"
+#include "sdl/emulator_random_generator.h"
 #include "mocks.h"
 
 #define CLOVE_SUITE_NAME TestEmulator
 
 chipotto::Emulator* emulator = nullptr;
+chipotto::SDLEmuRenderer* renderer = nullptr;
+chipotto::SDLInput* input_class = nullptr;
+chipotto::EmulatorRandomGenerator* random_generator = nullptr;
 
 CLOVE_SUITE_SETUP_ONCE()
 {
-    emulator = new chipotto::Emulator();
+    renderer = new chipotto::SDLEmuRenderer(64, 32);
+    input_class = new chipotto::SDLInput();
+    random_generator = new chipotto::EmulatorRandomGenerator();
+    emulator = new chipotto::Emulator(renderer, input_class, random_generator);
 }
 
 CLOVE_SUITE_TEARDOWN()
@@ -26,7 +35,7 @@ CLOVE_SUITE_TEARDOWN_ONCE()
 
 CLOVE_TEST(CLS)
 {
-    SDL_Texture* texture = emulator->GetTexture();
+    SDL_Texture* texture = renderer->GetTexture();
     int height = emulator->GetHeight();
     int pitch;
     uint8_t* pixels = nullptr;
@@ -485,7 +494,7 @@ CLOVE_TEST(DRW_VX_VY_NIBBLE_NO_COLLISION)
 
     emulator->OpcodeD(0xD115);
 
-    auto texture = emulator->GetTexture();
+    auto texture = renderer->GetTexture();
 
     int pitch;
     uint8_t* pixels;
@@ -531,7 +540,7 @@ CLOVE_TEST(DRW_VX_VY_NIBBLE_COLLISION)
         0xFF,0xFF,0xFF,0xFF,    0x00,0x00,0x00,0x00,    0x00,0x00,0x00,0x00,    0x00,0x00,0x00,0x00,
     };
     
-    auto texture = emulator->GetTexture();
+    auto texture = renderer->GetTexture();
     int pitch;
     uint8_t* pixels;
 
@@ -577,7 +586,7 @@ CLOVE_TEST(DRW_VX_VY_NIBBLE_WRAP_HORIZONTAL)
 
     emulator->OpcodeD(0xD125);
 
-    auto texture = emulator->GetTexture();
+    auto texture = renderer->GetTexture();
 
     int pitch;
     uint8_t* pixels;
@@ -640,7 +649,7 @@ CLOVE_TEST(DRW_VX_VY_NIBBLE_NO_WRAP_HORIZONTAL)
 
     emulator->OpcodeD(0xD125);
 
-    auto texture = emulator->GetTexture();
+    auto texture = renderer->GetTexture();
 
     int pitch;
     uint8_t* pixels;
@@ -701,7 +710,7 @@ CLOVE_TEST(DRW_VX_VY_NIBBLE_WRAP_VERTICAL)
 
     emulator->OpcodeD(0xD125);
 
-    auto texture = emulator->GetTexture();
+    auto texture = renderer->GetTexture();
 
     int pitch;
     uint8_t* pixels;
@@ -754,7 +763,7 @@ CLOVE_TEST(DRW_VX_VY_NIBBLE_NO_WRAP_VERTICAL)
 
     emulator->OpcodeD(0xD125);
 
-    auto texture = emulator->GetTexture();
+    auto texture = renderer->GetTexture();
 
     int pitch;
     uint8_t* pixels;

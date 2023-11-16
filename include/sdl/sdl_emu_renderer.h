@@ -38,6 +38,10 @@ namespace chipotto
 
 		virtual ~SDLEmuRenderer() override;
 
+#ifdef EMU_TEST
+		inline SDL_Texture* GetTexture() { return texture; }
+#endif // EMU_TEST
+
 	protected:
 		SDL_Window* window = nullptr;
 		SDL_Renderer* renderer = nullptr;
