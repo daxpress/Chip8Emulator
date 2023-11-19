@@ -31,7 +31,7 @@ int main(int argc, char** argv)
 	chipotto::Emulator emulator(&renderer, &input_class, &random_generator);
 
 	chipotto::Gamefile* gamefile;
-	if (!chipotto::Loader::ReadFromFile("resources\\TICTAC", &gamefile))
+	if (!chipotto::Loader::ReadFromFile("resources\\DELAYTEST", &gamefile))
 	{
 		goto quit_on_error;	// panicking
 	}

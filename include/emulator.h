@@ -162,8 +162,8 @@ namespace chipotto
 
 		bool Suspended = false;
 		uint8_t WaitForKeyboardRegister_Index = 0;
-		uint64_t DelayTimerDeltaTicks = 0;
-		uint64_t SoundTimerDeltaTicks = 0;
+		double DelayTimerDeltaTicks = 0;
+		double SoundTimerDeltaTicks = 0;
 
 		int width = 64;
 		int height = 32;
