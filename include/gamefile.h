@@ -1,9 +1,10 @@
 #pragma once
 #include <cstdlib>
+#include "export.h"
 
 namespace chipotto
 {
-	class Gamefile
+	class CHIP8_API Gamefile
 	{
 	public:
 

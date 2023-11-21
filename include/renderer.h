@@ -1,10 +1,11 @@
 #pragma once
+#include "export.h"
 
 #include <cstdint>
 
 namespace chipotto
 {
-	class EmuRenderer
+	class CHIP8_API EmuRenderer
 	{
 	public:
 		EmuRenderer(const int in_width, const int in_height) 

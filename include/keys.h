@@ -1,5 +1,7 @@
 #pragma once
 
+#include "export.h"
+
 #define KEY_AS_INT(Key) static_cast<int>(Key)
 #define INT_AS_KEY(Int) static_cast<EmuKey>(Int)
 

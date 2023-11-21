@@ -2,10 +2,10 @@
 #include <iostream>
 
 #include "emulator.h"
-#include "sdl/emulator_random_generator.h"
-#include "sdl/sdl_input.h"
 #include "input_type.h"
-#include "sdl/sdl_emu_renderer.h"
+#include "iinput_command.h"
+#include "irandom_generator.h"
+#include "renderer.h"
 
 namespace chipotto
 {

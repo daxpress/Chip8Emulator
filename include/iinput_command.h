@@ -1,12 +1,13 @@
 #pragma once
 
+#include "export.h"
 #include <cstdint>
 #include "keys.h"
 #include "input_type.h"
 
 namespace chipotto
 {
-	class IInputCommand
+	class CHIP8_API IInputCommand
 	{
 	public:
 		virtual const uint8_t* GetKeyboardState() = 0;

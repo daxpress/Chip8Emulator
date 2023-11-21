@@ -6,7 +6,7 @@ project(Chip8Emulator LANGUAGES CXX)
 
 set(PROJ_CPPS src/emulator.cpp)
 set(PROJ_HS include/emulator.h include/irandom_generator.h include/iinput_command.h include/gamefile.h
-include/keys.h include/input_type.h include/renderer.h)
+include/keys.h include/input_type.h include/renderer.h include/export.h)
 
 set(PROJ_HS_SDL include/sdl/emulator_random_generator.h include/sdl/sdl_input.h include/sdl/loader.h
 include/sdl/sdl_emu_renderer.h)
@@ -69,3 +69,16 @@ else()
 endif()
 
 add_test(NAME Chip8Tests COMMAND Chip8Tests -x)
+
+# BUILD clean libs and export header files
+
+set(LIB_SRC ${PROJ_CPPS} ${PROJ_HS})
+
+add_library(Chip8LibDLL SHARED ${LIB_SRC})
+add_library(Chip8LibLIB STATIC ${LIB_SRC})
+
+set_property(TARGET Chip8LibDLL PROPERTY CXX_STANDARD 20)
+set_property(TARGET Chip8LibLIB PROPERTY CXX_STANDARD 20)
+
+target_include_directories(Chip8LibDLL PUBLIC include)
+target_include_directories(Chip8LibLIB PUBLIC include)

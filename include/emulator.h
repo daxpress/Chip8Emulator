@@ -1,5 +1,6 @@
 #pragma once
 
+#include "export.h"
 #include <array>
 #include <cstdint>
 #include <functional>
@@ -16,7 +17,7 @@ namespace chipotto
 	class EmuRenderer;
 	class IRandomGenerator;
 
-	enum class OpcodeStatus
+	enum class CHIP8_API OpcodeStatus
 	{
 		IncrementPC,
 		NotIncrementPC,
@@ -26,7 +27,7 @@ namespace chipotto
 		Error
 	};
 
-	 class Emulator
+	 class CHIP8_API Emulator
 	{
 	public:
 		Emulator() = delete;

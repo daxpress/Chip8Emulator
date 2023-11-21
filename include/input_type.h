@@ -1,7 +1,9 @@
 #pragma once
+
+#include "export.h"
 namespace chipotto
 {
-	enum class InputType
+	enum class CHIP8_API InputType
 	{
 		KEYDOWN,
 		QUIT,
