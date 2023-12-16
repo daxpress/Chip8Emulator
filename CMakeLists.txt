@@ -70,15 +70,18 @@ endif()
 
 add_test(NAME Chip8Tests COMMAND Chip8Tests -x)
 
-# BUILD clean libs and export header files
+# BUILD clean libs
 
 set(LIB_SRC ${PROJ_CPPS} ${PROJ_HS})
 
-add_library(Chip8LibDLL SHARED ${LIB_SRC})
-add_library(Chip8LibLIB STATIC ${LIB_SRC})
+add_library(Chip8 SHARED ${LIB_SRC})
 
-set_property(TARGET Chip8LibDLL PROPERTY CXX_STANDARD 20)
-set_property(TARGET Chip8LibLIB PROPERTY CXX_STANDARD 20)
+set_property(TARGET Chip8 PROPERTY CXX_STANDARD 20)
 
-target_include_directories(Chip8LibDLL PUBLIC include)
-target_include_directories(Chip8LibLIB PUBLIC include)
+target_include_directories(Chip8 PUBLIC include)
+
+add_library(Chip8_static STATIC ${LIB_SRC})
+
+set_property(TARGET Chip8_static PROPERTY CXX_STANDARD 20)
+
+target_include_directories(Chip8_static PUBLIC include)
