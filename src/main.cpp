@@ -17,18 +17,18 @@ int main(int argc, char** argv)
 	}
 	float last_tick = SDL_GetTicks64();
 
-	chipotto::SDLEmuRenderer renderer = chipotto::SDLEmuRenderer(64, 32);
+	chipotto::SDLEmuRenderer* renderer = new chipotto::SDLEmuRenderer(64, 32);
 
-	if (!renderer.IsValid())
+	if (!renderer->IsValid())
 	{
 		SDL_Quit();
 		return -1;
 	}
 
-	chipotto::SDLInput input_class = chipotto::SDLInput();
-	chipotto::EmulatorRandomGenerator random_generator = chipotto::EmulatorRandomGenerator();
+	chipotto::SDLInput* input_class = new chipotto::SDLInput();
+	chipotto::EmulatorRandomGenerator* random_generator = new chipotto::EmulatorRandomGenerator();
 
-	chipotto::Emulator emulator(&renderer, &input_class, &random_generator);
+	chipotto::Emulator emulator(renderer, input_class, random_generator);
 
 	chipotto::Gamefile* gamefile;
 	if (!chipotto::Loader::ReadFromFile("resources\\TICTAC", &gamefile))
@@ -37,7 +37,6 @@ int main(int argc, char** argv)
 	}
 
 	emulator.Load(gamefile);
-
 
 	while (true)
 	{

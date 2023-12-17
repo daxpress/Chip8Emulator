@@ -37,6 +37,19 @@ namespace chipotto
 
 	Emulator::~Emulator()
 	{
+		if (renderer)
+		{
+			delete renderer;
+		}
+		if (input_class)
+		{
+			delete input_class;
+		}
+
+		if (random_generator)
+		{
+			delete random_generator;
+		}
 	}
 
 	bool Emulator::Load(const Gamefile* gamefile)

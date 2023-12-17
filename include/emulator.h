@@ -42,7 +42,16 @@ namespace chipotto
 
 		bool Tick(const float deltatime);
 
+		void HardResetEmulator();
+
+		inline void SetDoWrap(const bool do_wrap) { DoWrap = do_wrap; }
+
+	private:
 #pragma region Opcode Categories
+
+#ifdef EMU_TEST
+	public:
+#endif // EMU_TEST
 
 		OpcodeStatus Opcode0(const uint16_t opcode);
 
@@ -77,9 +86,8 @@ namespace chipotto
 		OpcodeStatus OpcodeF(const uint16_t opcode);
 
 #pragma endregion
-
 #pragma region Opcode Instructions
-
+	private:
 		OpcodeStatus CLS();
 		OpcodeStatus RET();
 		OpcodeStatus JP(uint16_t address);
@@ -114,13 +122,7 @@ namespace chipotto
 		OpcodeStatus LD_B_VX(uint8_t Vx);
 		OpcodeStatus LD_I_VX(uint8_t Vx);
 		OpcodeStatus LD_VX_I(uint8_t Vx);
-
-
 #pragma endregion
-
-		void HardResetEmulator();
-
-		inline void SetDoWrap(const bool do_wrap) { DoWrap = do_wrap;}
 
 #ifdef EMU_TEST
 	public:
