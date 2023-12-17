@@ -1,6 +1,6 @@
 #include "clove-unit.h"
 
-#include "emulator.h"
+#include "emulator_impl.h"
 #include "sdl/sdl_emu_renderer.h"
 #include "sdl/sdl_input.h"
 #include "sdl/emulator_random_generator.h"
