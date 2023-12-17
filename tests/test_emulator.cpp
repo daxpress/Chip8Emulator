@@ -8,7 +8,7 @@
 
 #define CLOVE_SUITE_NAME TestEmulator
 
-chipotto::Emulator* emulator = nullptr;
+chipotto::EmulatorImpl* emulator = nullptr;
 chipotto::SDLEmuRenderer* renderer = nullptr;
 chipotto::SDLInput* input_class = nullptr;
 chipotto::EmulatorRandomGenerator* random_generator = nullptr;
@@ -18,7 +18,7 @@ CLOVE_SUITE_SETUP_ONCE()
     renderer = new chipotto::SDLEmuRenderer(64, 32);
     input_class = new chipotto::SDLInput();
     random_generator = new chipotto::EmulatorRandomGenerator();
-    emulator = new chipotto::Emulator(renderer, input_class, random_generator);
+    emulator = new chipotto::EmulatorImpl(renderer, input_class, random_generator);
 }
 
 CLOVE_SUITE_TEARDOWN()

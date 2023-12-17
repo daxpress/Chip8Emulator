@@ -4,8 +4,8 @@ project(Chip8Emulator LANGUAGES CXX)
 
 # MAIN EXECUTABLE
 
-set(PROJ_CPPS src/emulator.cpp)
-set(PROJ_HS include/emulator.h include/irandom_generator.h include/iinput_command.h include/gamefile.h
+set(PROJ_CPPS src/emulator_impl.cpp src/emulator.cpp)
+set(PROJ_HS include/emulator_impl.h include/emulator.h include/irandom_generator.h include/iinput_command.h include/gamefile.h
 include/keys.h include/input_type.h include/renderer.h include/export.h)
 
 set(PROJ_HS_SDL include/sdl/emulator_random_generator.h include/sdl/sdl_input.h include/sdl/loader.h
