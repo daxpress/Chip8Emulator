@@ -65,6 +65,7 @@ CLOVE_TEST(CLS)
         CLOVE_FAIL();
     }
     SDL_UnlockTexture(texture);
+    free(pixels_zeros);
 }
 
 CLOVE_TEST(RET)
