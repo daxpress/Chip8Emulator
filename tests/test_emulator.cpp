@@ -46,7 +46,7 @@ CLOVE_TEST(CLS)
     memset(pixels, 0xFF, pitch * height);    // texture is not clean
     SDL_UnlockTexture(texture);
 
-    uint8_t* pixels_zeros = reinterpret_cast<uint8_t*>(malloc(pitch * height));
+    uint8_t* pixels_zeros = new uint8_t[pitch * height];
     memset(pixels_zeros, 0, pitch * height);
 
     // run CLS opcode
@@ -65,7 +65,7 @@ CLOVE_TEST(CLS)
         CLOVE_FAIL();
     }
     SDL_UnlockTexture(texture);
-    free(pixels_zeros);
+    delete[] pixels_zeros;
 }
 
 CLOVE_TEST(RET)
